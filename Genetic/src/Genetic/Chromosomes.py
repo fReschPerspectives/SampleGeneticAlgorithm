@@ -6,9 +6,9 @@ class Chromosome:
     """
     A class representing a set of chromosomes, each containing a list of genes.
     """
-    def __init__(self, genes: list[Genes.Genes], original_genes: list[
-        Genes.Genes] = Capitals.Capital.create_state_capitals()):
-        self.genes = genes
+    def __init__(self, original_genes:
+        Genes.Genes = None):
+        self.genes = random.shuffle(Capitals.Capital.create_state_capitals())
         self.original_genes = original_genes if original_genes else Capitals.Capital.create_state_capitals()
 
 
