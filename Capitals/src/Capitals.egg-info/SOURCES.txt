@@ -1,0 +1,7 @@
+pyproject.toml
+src/Capitals/Capitals.py
+src/Capitals/__init__.py
+src/Capitals.egg-info/PKG-INFO
+src/Capitals.egg-info/SOURCES.txt
+src/Capitals.egg-info/dependency_links.txt
+src/Capitals.egg-info/top_level.txt
