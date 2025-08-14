@@ -1,31 +1,39 @@
 from Genetic import Genes, Chromosomes
+from Genetic.Population import Population
 
 if __name__ == "__main__":
-    # Create a Genes object and generate random genes
-    first = Genes.Genes()
-    second = Genes.Genes()
+    # Create a population of chromosomes
+    initial_population_size = 20
 
-    first.create_genes()
-    second.create_genes()
+    # Initialize the population with a specified size and individual class
+    # Each individual is a Chromosome object initialized with a set of genes
+    population = Population(initial_population_size, Chromosomes.Chromosome)
 
-    # Create a Chromosome object with the generated genes
-    chromosome = Chromosomes.Chromosome(first.get_genes())
-    print(chromosome)
+    # Create unique genes for each chromosome
+    for individual in population.get_individuals():
+        genes = Genes.Genes()
+        genes.create_genes()
+        individual.genes = genes.get_genes()
+        print(individual)  # Print the second chromosome in the population
 
-    other_chromosome = Chromosomes.Chromosome(second.get_genes())
-    print(other_chromosome)
-
-    # Perform crossover with another chromosome
-    new_chromosome = chromosome.crossover(other_chromosome)
-
-    # Print the new chromosome after crossover
-    print(new_chromosome)
-
-    # Mutate the new chromosome with a mutation rate of 0.1
-    new_chromosome.mutate(0.4)
-
-    # Repair the chromosome by ensuring it contains unique genes
-    new_chromosome.repair_chromosome()
-
-    # Print the mutated chromosome
-    print(new_chromosome)
+    # # Create a Chromosome object with the generated genes
+    # chromosome = Chromosomes.Chromosome(first.get_genes())
+    # print(chromosome)
+    #
+    # other_chromosome = Chromosomes.Chromosome(second.get_genes())
+    # print(other_chromosome)
+    #
+    # # Perform crossover with another chromosome
+    # new_chromosome = chromosome.crossover(other_chromosome)
+    #
+    # # Print the new chromosome after crossover
+    # print(new_chromosome)
+    #
+    # # Mutate the new chromosome with a mutation rate of 0.1
+    # new_chromosome.mutate(0.4)
+    #
+    # # Repair the chromosome by ensuring it contains unique genes
+    # new_chromosome.repair_chromosome()
+    #
+    # # Print the mutated chromosome
+    # print(new_chromosome)

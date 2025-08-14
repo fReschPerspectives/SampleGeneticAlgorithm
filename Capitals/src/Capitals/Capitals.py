@@ -74,3 +74,18 @@ class Capital:
             Capital("Cheyenne", "Wyoming", 41.1400, -104.8202, 65132)
         ]
         return capitals
+
+    def get_capital_by_name(self, name: str):
+        """
+
+        :param name: The name of a Capital City one wishes to retrieve
+        :return: The capital object with that corresponding name
+        """
+
+        all_capitals = Capital.create_state_capitals()
+
+        for c in all_capitals:
+            if c.Name == name:
+                return c
+            else:
+                pass
