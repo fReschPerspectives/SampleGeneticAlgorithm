@@ -8,9 +8,10 @@ class Chromosome:
     """
     def __init__(self, original_genes:
         Genes = None):
-        self.genes = random.shuffle(Capital.create_state_capitals())
+        self.genes = Capital.create_state_capitals()
+        random.shuffle(self.genes)  # Shuffle the genes to create a random order
         self.original_genes = original_genes if original_genes else Capital.create_state_capitals()
-
+        self.fitness = float('inf')  # Initialize fitness to infinity
 
     def __str__(self):
         return f"Chromosomes(genes={self.genes})"
@@ -18,6 +19,14 @@ class Chromosome:
 
     def __repr__(self):
         return self.__str__()
+
+    def get_genes(self):
+        """
+        Get the genes of the chromosome.
+
+        :return: List of genes in the chromosome.
+        """
+        return self.genes
 
     def crossover(self, other):
         """

@@ -12,6 +12,8 @@ class Population:
             self.individuals = [individual_class(genes) for _ in range(population_size)]
         else:
             self.individuals = [individual_class() for _ in range(population_size)]
+        self.min_travel_distance = float('inf')
+        self.best_individual = None
 
     def get_individuals(self):
         return self.individuals
@@ -21,3 +23,16 @@ class Population:
             self.individuals = individuals
         else:
             raise ValueError("Number of individuals must match the population size.")
+
+    def calculate_fitness(self, fitness_function):
+        """
+        Calculate the fitness of each individual in the population using the provided fitness function.
+        The fitness function should take an individual as input and return its fitness value.
+
+        :param fitness_function: A function that calculates the fitness of an individual.
+        """
+        for individual in self.individuals:
+            individual.fitness = fitness_function(individual)
+            if individual.fitness < self.min_travel_distance:
+                self.min_travel_distance = individual.fitness
+                self.best_individual = individual

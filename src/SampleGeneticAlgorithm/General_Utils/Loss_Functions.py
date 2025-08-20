@@ -4,7 +4,7 @@ It includes functions to calculate the fitness of a chromosome based on its gene
 For the capitals problem, the fitness is calculated as the minimum distance to travel between all capitals.
 """
 
-import SampleGeneticAlgorithm.Capitals as Capitals
+from SampleGeneticAlgorithm.Capitals.Capital import Capital
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     """
@@ -44,24 +44,24 @@ def calculate_fitness(chromosome):
     genes = chromosome.get_genes()
 
     for i in range(len(genes) - 1):
-        capital1 = Capitals.Capital.get_capital_by_name(genes[i])
-        capital2 = Capitals.Capital.get_capital_by_name(genes[i + 1])
+        capital1 = genes[i].get_capital_by_name(genes[i].Name)
+        capital2 = genes[i + 1].get_capital_by_name(genes[i + 1].Name)
 
         if capital1 and capital2:
             distance = haversine_distance(
-                capital1.latitude, capital1.longitude,
-                capital2.latitude, capital2.longitude
+                capital1.Latitude, capital1.Longitude,
+                capital2.Latitude, capital2.Longitude
             )
             total_distance += distance
 
     # Add distance from last to first to complete the loop
     if len(genes) > 1:
-        capital1 = Capitals.Capital.get_capital_by_name(genes[-1])
-        capital2 = Capitals.Capital.get_capital_by_name(genes[0])
+        capital1 = genes[-1].get_capital_by_name(genes[-1].Name)
+        capital2 = genes[0].get_capital_by_name(genes[0].Name)
         if capital1 and capital2:
             distance = haversine_distance(
-                capital1.latitude, capital1.longitude,
-                capital2.latitude, capital2.longitude
+                capital1.Latitude, capital1.Longitude,
+                capital2.Latitude, capital2.Longitude
             )
             total_distance += distance
 
