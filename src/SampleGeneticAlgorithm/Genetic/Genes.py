@@ -1,4 +1,4 @@
-import Capitals
+from SampleGeneticAlgorithm.Capitals.Capital import Capital
 import random
 
 class Genes:
@@ -17,7 +17,7 @@ class Genes:
         return f"Genes: {self.genes}"
 
     def create_genes(self):
-        capitals = Capitals.Capital.create_state_capitals()
+        capitals = Capital.create_state_capitals()
         random.shuffle(capitals)
         self.genes = capitals
 

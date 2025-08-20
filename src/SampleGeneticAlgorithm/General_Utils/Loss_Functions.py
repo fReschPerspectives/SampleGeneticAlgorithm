@@ -4,7 +4,7 @@ It includes functions to calculate the fitness of a chromosome based on its gene
 For the capitals problem, the fitness is calculated as the minimum distance to travel between all capitals.
 """
 
-import Capitals
+import SampleGeneticAlgorithm.Capitals as Capitals
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     """

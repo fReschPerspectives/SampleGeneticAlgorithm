@@ -1,5 +1,5 @@
-import Capitals
-from Genetic import Genes
+from SampleGeneticAlgorithm.Capitals.Capital import Capital
+from SampleGeneticAlgorithm.Genetic.Genes import Genes
 import random
 
 class Chromosome:
@@ -7,9 +7,9 @@ class Chromosome:
     A class representing a set of chromosomes, each containing a list of genes.
     """
     def __init__(self, original_genes:
-        Genes.Genes = None):
-        self.genes = random.shuffle(Capitals.Capital.create_state_capitals())
-        self.original_genes = original_genes if original_genes else Capitals.Capital.create_state_capitals()
+        Genes = None):
+        self.genes = random.shuffle(Capital.create_state_capitals())
+        self.original_genes = original_genes if original_genes else Capital.create_state_capitals()
 
 
     def __str__(self):
