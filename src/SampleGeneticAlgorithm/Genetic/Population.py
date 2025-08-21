@@ -1,3 +1,6 @@
+from concurrent.futures import ProcessPoolExecutor
+import multiprocessing
+
 class Population:
     """
     This class represents a population of individuals in a genetic algorithm.
@@ -53,8 +56,26 @@ class Population:
 
         :param fitness_function: A function that calculates the fitness of an individual.
         """
-        for individual in self.individuals:
+        for individual in self.get_individuals():
             individual.fitness = fitness_function(individual)
             if individual.fitness < self.min_travel_distance:
                 self.min_travel_distance = individual.fitness
                 self.best_individual = individual
+
+    def calculate_fitness_parallel(self, fitness_function=calculate_fitness):
+        """
+        Parallel version of fitness calculation. Uses all available CPU cores.
+        
+        :param fitness_function: A function that calculates the fitness of an individual.
+        """
+        # Use all available cores
+        with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
+            # Submit all individuals for parallel fitness evaluation
+            fitness_results = list(executor.map(fitness_function, self.individuals))
+
+        # Assign fitness and find best individual
+        for individual, fitness in zip(self.individuals, fitness_results):
+            individual.fitness = fitness
+            if fitness < self.min_travel_distance:
+                self.min_travel_distance = fitness
+            self.best_individual = individual

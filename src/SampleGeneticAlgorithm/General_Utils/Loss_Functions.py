@@ -66,3 +66,4 @@ def calculate_fitness(chromosome):
             total_distance += distance
 
     return total_distance
+
