@@ -8,32 +8,39 @@ if __name__ == "__main__":
     from SampleGeneticAlgorithm.General_Utils.Plotting import plot_trail
 
     # Create a population of chromosomes
-    initial_population_size = 20
+    initial_population_size = 50
 
     # Initialize the population with a specified size and individual class
     # Each individual is a Chromosome object initialized with a set of genes
-    population = Population(initial_population_size, Chromosome)
+    population = Population(initial_population_size, Chromosome, mutation_rate=0.15)
 
     # Calculate the fitness of each individual in the population
     from SampleGeneticAlgorithm.General_Utils.Loss_Functions import calculate_fitness
     population.calculate_fitness(calculate_fitness)
 
-    # testing a single choromosome pathing for plotting
-    thing = population.best_individual
+    # Print the initial best fitness
+    print(f"Initial Best Fitness: {population.best_individual.fitness}")
 
-    thing1 = thing.genes # this is a list of the genes in the first chromosome
-    latitudes = [] # list to hold latitudes of capitals
-    longitudes = [] #
+    # Define the number of generations to iterate through:
+    num_generations = 200
+    for i in range(num_generations):
+        print(f"Generation {i + 1}: Best Fitness = {population.best_individual.fitness}")
 
-    for g in thing1:
-        latitudes.append(g.Latitude)  # Assuming each gene has a Latitude attribute
-        longitudes.append(g.Longitude)  # Assuming each gene has a Longitude attribute
+        # Set up the breeding process with the current population
+        breeding = Breeding(population)
 
-    plot_trail(latitudes, longitudes, title="Random Path of Capitals") # Plot the trail traversed by the first chromosome's genes
+        # Perform breeding to create a new generation
+        new_generation = breeding.breed()
 
-    # Create a Breeding instance with the current population
-    breeding = Breeding(population)
+        # Update the population with the new generation
+        population = new_generation
 
-    # Perform breeding to create a new generation
-    new_generation = breeding.breed()
+        latitudes = [gene.Latitude for gene in population.best_individual.get_genes()]
+        longitudes = [gene.Longitude for gene in population.best_individual.get_genes()]
+        # Plot the trail of the best individual in the population
+        plot_trail(latitudes,
+                   longitudes,
+                   title=f"Generation {i + 1} - Best Fitness: {population.best_individual.fitness}",
+                   )
 
+    print(f"Final Best Fitness: {population.best_individual.fitness}")

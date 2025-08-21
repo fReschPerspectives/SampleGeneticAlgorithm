@@ -94,12 +94,15 @@ class Chromosome:
                 seen.add(self.genes[i])
 
         missing_genes = [gene for gene in original_genes if gene not in seen]
-        for i in range(len(self.genes)):
-            if self.genes[i] in seen:
-                # Replace with a random gene and remove it from missing_genes
-                replacement = random.choice(missing_genes)
-                self.genes[i] = replacement
-                missing_genes.remove(replacement)
-            else:
-                # If the gene is unique, just move on
-                pass
+        if len(missing_genes) > 0:
+            for i in range(len(self.genes)):
+                if self.genes[i] in seen:
+                    # Replace with a random gene and remove it from missing_genes
+                    replacement = random.choice(missing_genes)
+                    self.genes[i] = replacement
+                    missing_genes.remove(replacement)
+                else:
+                    # If the gene is unique, just move on
+                    pass
+        else:
+            pass

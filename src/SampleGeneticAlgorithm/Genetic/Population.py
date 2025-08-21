@@ -5,15 +5,33 @@ class Population:
     Each individual in the population is an instance of the provided individual class.
     It provides methods to get and set the individuals in the population.
     """
-    def __init__(self, population_size, individual_class, genes = None):
+
+    def __init__(self, population_size, individual_class, genes = None,
+                 min_travel_distance=None, best_individual=None, mutation_rate=0.25):
+        """
+        Initialize the population with a specified size and individual class.
+        Each individual in the population is an instance of the provided individual class.
+        If genes are provided, each individual is initialized with those genes.
+        If no genes are provided, individuals are initialized with default genes.
+        The minimum travel distance is set to infinity by default, and the best individual is set to None.
+        The mutation rate is set to 0.25 by default, but can be specified.
+
+        :param population_size:
+        :param individual_class:
+        :param genes:
+        :param min_travel_distance:
+        :param best_individual:
+        :param mutation_rate:
+        """
         self.population_size = population_size
         self.individual_class = individual_class
         if genes:
             self.individuals = [individual_class(genes) for _ in range(population_size)]
         else:
             self.individuals = [individual_class() for _ in range(population_size)]
-        self.min_travel_distance = float('inf')
-        self.best_individual = None
+        self.min_travel_distance = float('inf') if min_travel_distance is None else min_travel_distance
+        self.best_individual = best_individual if best_individual else None
+        self.mutation_rate = mutation_rate if mutation_rate is not None else 0.25
 
     def get_individuals(self):
         return self.individuals

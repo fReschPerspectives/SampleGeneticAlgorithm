@@ -40,4 +40,15 @@ def plot_trail(latitudes, longitudes, title="Trail Map"):
     ax.set_xlabel("Longitude")
     ax.set_ylabel("Latitude")
 
-    plt.show()
+    # Create 'plots' directory in root if it doesn't exist
+    save_dir = os.path.join(os.getcwd(), "plots")
+    os.makedirs(save_dir, exist_ok=True)
+
+    # Save the figure as PNG
+    save_path = os.path.join(save_dir, f"{title.replace(' ', '_').lower()}.png")
+    plt.savefig(save_path, bbox_inches='tight')
+    print(f"Plot saved to: {save_path}")
+
+    plt.show(block=False)  # Show the plot without blocking the execution
+    plt.pause(2)
+    plt.close(fig)  # Close the figure to free up memory
