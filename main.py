@@ -8,11 +8,11 @@ if __name__ == "__main__":
     from SampleGeneticAlgorithm.General_Utils.Plotting import plot_trail
 
     # Create a population of chromosomes
-    initial_population_size = 200
+    initial_population_size = 250  # Define the initial population size
 
     # Initialize the population with a specified size and individual class
     # Each individual is a Chromosome object initialized with a set of genes
-    population = Population(initial_population_size, Chromosome, mutation_rate=0.06)
+    population = Population(initial_population_size, Chromosome, mutation_rate=0.06, cross_over_rate=0.06)
 
     # Calculate the fitness of each individual in the population
     from SampleGeneticAlgorithm.General_Utils.Loss_Functions import calculate_fitness
@@ -25,6 +25,8 @@ if __name__ == "__main__":
     num_generations = 500
     for i in range(num_generations):
         print(f"Generation {i + 1}: Best Fitness = {population.best_individual.fitness}")
+
+        previous_best_fitness = population.best_individual.fitness
 
         # Set up the breeding process with the current population
         breeding = Breeding(population)
@@ -39,10 +41,13 @@ if __name__ == "__main__":
         best_genes = population.best_individual.get_genes()
         latitudes = [gene.Latitude for gene in best_genes]
         longitudes = [gene.Longitude for gene in best_genes]
-        # Plot the trail of the best individual in the population
-        plot_trail(latitudes,
-                   longitudes,
-                   title=f"Generation {i + 1} - Best Fitness: {population.best_individual.fitness}",
-                   )
+
+        # Plot the trail of the best individual in the population if different from the previous generation
+        new_best_fitness = population.best_individual.fitness
+        if (new_best_fitness != previous_best_fitness) or (i == 0):
+            plot_trail(latitudes,
+                       longitudes,
+                       title=f"Generation {i + 1} - Best Fitness: {population.best_individual.fitness}",
+                      )
 
     print(f"Final Best Fitness: {population.best_individual.fitness}")

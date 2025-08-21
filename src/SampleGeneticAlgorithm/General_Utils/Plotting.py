@@ -2,6 +2,19 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import os
 
+# Module-level cache
+_cached_usa = None
+
+def get_usa_geometry():
+    """Load and cache the USA geometry once."""
+    global _cached_usa
+    if _cached_usa is None:
+        url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip"
+        world = gpd.read_file(url)
+        _cached_usa = world[world['NAME'] == 'United States of America']
+    return _cached_usa
+
+
 def plot_trail(latitudes, longitudes, title="Trail Map"):
     """
     Plot a trail on a US map given ordered lists of latitudes and longitudes.
@@ -11,13 +24,7 @@ def plot_trail(latitudes, longitudes, title="Trail Map"):
         longitudes (list): Ordered list of longitude points
         title (str): Title for the plot
     """
-
-    # Use the Natural Earth dataset directly from the URL if not locally cached
-    url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip"
-
-    # Read directly from URL via geopandas/fiona
-    world = gpd.read_file(url)
-    usa = world[world['NAME'] == 'United States of America']
+    usa = get_usa_geometry()
 
     # Create the plot
     fig, ax = plt.subplots(figsize=(15, 10))
@@ -40,15 +47,15 @@ def plot_trail(latitudes, longitudes, title="Trail Map"):
     ax.set_xlabel("Longitude")
     ax.set_ylabel("Latitude")
 
-    # Create 'plots' directory in root if it doesn't exist
+    # Create 'plots' directory if it doesn't exist
     save_dir = os.path.join(os.getcwd(), "plots")
     os.makedirs(save_dir, exist_ok=True)
 
-    # Save the figure as PNG
+    # Save the figure
     save_path = os.path.join(save_dir, f"{title.replace(' ', '_').lower()}.png")
     plt.savefig(save_path, bbox_inches='tight')
     print(f"Plot saved to: {save_path}")
 
-    plt.show(block=False)  # Show the plot without blocking the execution
+    plt.show(block=False)
     plt.pause(2)
-    plt.close(fig)  # Close the figure to free up memory
+    plt.close(fig)

@@ -1,5 +1,6 @@
 from SampleGeneticAlgorithm.General_Utils.Loss_Functions import calculate_fitness
 from SampleGeneticAlgorithm.Genetic.Population import Population
+import random
 import itertools
 import copy
 
@@ -25,78 +26,36 @@ class Breeding(Population):
         This involves selecting parents, performing crossover, and applying mutation.
         """
         elite = self.best_individual  # Get the best individual from the current population
-        elite_mutated = copy.deepcopy(elite)  # Create a copy of the elite individual to mutate
 
         init_population_size = self.population_size  # Get the current population size
 
-        # create elite mutants
-        elite_mutants = []
-        for i in range(init_population_size // 3):  # Create a number of elite mutants based on the initial population size
-            elite_copy = copy.deepcopy(elite)  # Create a fresh copy each time
-            elite_mutant = elite_copy.mutate(mutation_rate=self.mutation_rate, mode="shuffle")  # Mutate the
-            elite_mutants.append(elite_mutant)
-            del elite_copy
+        individuals = sorted(self.get_individuals(), key = lambda obj: obj.fitness) # Get the list of individuals in the population
 
-        for i in range(init_population_size // 3):
-            elite_copy = copy.deepcopy(elite_mutated)  # Create a fresh copy each time
-            elite_mutant = elite_copy.mutate(mutation_rate=self.mutation_rate, mode="chunk", max_chunk_size=3)  # Mutate the elite individual with a chunk mutation
-            elite_mutants.append(elite_mutant)  # Add the mutated elite individual to the list of elite mutants
-            del elite_copy  # Clear the copy to free up memory
-
-        for i in range(init_population_size // 3):
-            elite_copy = copy.deepcopy(elite_mutated)
-            elite_mutant = elite_copy.mutate(mutation_rate=self.mutation_rate, mode="swap")  # Mutate the elite individual with a swap mutation
-            elite_mutants.append(elite_mutant)  # Add the mutated elite individual to the list of elite mutants
-            del elite_copy # Clear the copy to free up memory
-
-        elite_mutants_population = Population(population_size=len(elite_mutants),
-                                              individual_class=self.individual_class,
-                                              genes=elite_mutants)
-        elite_mutants_population.calculate_fitness(calculate_fitness)  # Calculate the fitness of the elite mutants
-        del elite_mutants  # Clear the elite mutants list to free up memory
-
-        individuals = copy.deepcopy(sorted(self.get_individuals(), key = lambda obj: obj.fitness)) # Get the list of individuals in the population
-
-        # Ensure the new parent population size is half of the current population size
-        parents = copy.deepcopy(individuals[:init_population_size // 2])  # Create pairs of parents
+        # Select the top 50% of individuals as parents
+        parents = individuals[:len(individuals) // 2]  # Select the top
         children = []
 
-        # Iterate through all combinations of parents to create children
-        for p in list(itertools.combinations(parents,2)):
-            parent1 = p[0]  # Select the first parent from the pair
-            parent2 = p[1]  # Select the second parent from the pair
+        parent_pairs = list(itertools.combinations(parents, 2))  # Create pairs of parents for crossover
 
-            # Perform crossover to create a child
-            child = parent1.crossover(parent2) # Perform a crossover between the two parents to create a child
+        from tqdm import tqdm
+        from concurrent.futures import ThreadPoolExecutor, as_completed
 
-            # Mutate the child
-            child.mutate(mutation_rate=self.mutation_rate)
+        with ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(create_child, p1, p2, self.cross_over_rate, self.mutation_rate)
+                for p1, p2 in parent_pairs
+            ]
 
-            # Ensure the child has a unique chromosome by repairing it
-            child.repair_chromosome()
-
-            # Add the child to the new population
-            children.append(child)
+            for future in tqdm(as_completed(futures), total=len(futures)):
+                children.append(future.result())
 
         # Add the children to the new population
         child_population = Population(population_size=len(children), individual_class=self.individual_class, genes=children)  # Create a new population with the children
 
         # Assess the fitness of the new population
         child_population.calculate_fitness(calculate_fitness)  # Calculate the fitness of each child in the new population
-
-        # Iterate through the parents and mutate them
-        for parent in parents:
-            parent.mutate(mutation_rate=self.mutation_rate)  # Mutate each parent with the specified mutation rate
-
-        # make a new parent population with the mutated parents
-        parent_population = Population(population_size=len(parents)
-                                       , individual_class=self.individual_class
-                                       , genes=parents)  # Create a new population with the mutated parents
-        parent_population.calculate_fitness(calculate_fitness)  # Calculate the fitness of each parent in the new population
-
-        print(f"Parent population minimum fitness: {parent_population.min_travel_distance}")  # Print the minimum travel distance of the parent population
+        print(f"Child population size: {len(child_population.get_individuals())}")  # Print the size of the child population
         print(f"Children population minimum fitness: {child_population.min_travel_distance}")  # Print the minimum travel distance of the child population
-        print(f"Elite individual fitness: {elite.fitness}")  # Print the fitness of the elite individual
         print(f"Total population size: {len(individuals) + len(children) + len(parents)}")  # Print the total population size after breeding
 
         # Add some completely new individuals to the population
@@ -106,7 +65,7 @@ class Breeding(Population):
         new_individuals_population.calculate_fitness(calculate_fitness)  # Calculate the fitness of the new individuals
 
         # Combine the parent population with the child population and mutated parents
-        total_pool = [elite] + elite_mutants_population.get_individuals() + individuals + new_individuals_population.get_individuals() + parent_population.get_individuals() + child_population.get_individuals()  # Combine the current population with the new children
+        total_pool = [elite] + new_individuals_population.get_individuals() + child_population.get_individuals()  # Combine the current population with the new children
         total_pool = sorted(total_pool, key = lambda obj: obj.fitness) # Sort the combined pool by fitness
 
         most_fit_individuals = total_pool[:init_population_size]  # Select the most fit individuals to form the new generation
@@ -117,3 +76,9 @@ class Breeding(Population):
 
         self.population = None  # Clear the current population to free up memory
         return new_population  # return the next generation population
+
+def create_child(p1, p2, crossover_rate, mutation_rate):
+    child = p1.crossover(p2, crossover_rate)
+    child.mutate(mutation_rate)
+    child.repair_chromosome()
+    return child

@@ -28,24 +28,42 @@ class Chromosome:
         """
         return self.genes
 
-    def crossover(self, other):
+    def crossover(self, other, crossover_rate=0.05):
         """
         Perform crossover between this chromosome and another chromosome.
-        The crossover point is randomly selected, and genes are exchanged
-        between the two chromosomes at that point.
 
-        :param other: Another Chromosomes object to perform crossover with.
-        :return: A new Chromosomes object with the crossed-over genes.
+        Based on the crossover_rate, select a number of cities (genes) from `self`
+        and force their order into `other` at the same indices. This ensures
+        partial inheritance of gene order while preserving position.
+
+        :param other: Another Chromosome object to crossover with.
+        :param crossover_rate: Fraction of genes to use for crossover.
+        :return: A new Chromosome object with crossover-applied genes.
         """
 
         if len(self.genes) != len(other.genes):
             raise ValueError("Chromosomes must have the same number of genes for crossover.")
 
-        crossover_point = random.randint(0, len(self.genes) - 1)
+        gene_count = len(self.genes)
+        num_selected = max(1, int(crossover_rate * gene_count))
 
-        new_genes = self.genes[:crossover_point] + other.genes[crossover_point:]
+        # Randomly select genes from self to impose their order
+        selected_genes = random.sample(self.genes, num_selected)
+
+        # Get their order in self
+        selected_genes_in_order = [gene for gene in self.genes if gene in selected_genes]
+
+        # Find their indices in other
+        selected_indices_in_other = [i for i, gene in enumerate(other.genes) if gene in selected_genes]
+
+        # Sort the selected_genes_in_order based on self
+        # Put those into the same positions in a copy of other.genes
+        new_genes = other.genes[:]
+        for idx, gene in zip(selected_indices_in_other, selected_genes_in_order):
+            new_genes[idx] = gene
 
         return Chromosome(new_genes)
+
 
     def mutate(self, mutation_rate, mode="swap", max_chunk_size=3):
         """
