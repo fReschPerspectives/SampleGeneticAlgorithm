@@ -1,3 +1,6 @@
+from SampleGeneticAlgorithm.General_Utils.Haversine import haversine_distance
+from collections import OrderedDict
+
 class Capital:
     """
     This class is for initiating an object for each of the 50 US State Capitals;
@@ -89,3 +92,31 @@ class Capital:
                 return c
             else:
                 pass
+
+    def get_capital_distances():
+        capitals = Capital.create_state_capitals()
+        result = {}
+        for capital in capitals:
+            distances = {}
+            for other in capitals:
+                if capital.Name != other.Name:
+                    dist = haversine_distance(capital.Latitude, capital.Longitude, other.Latitude, other.Longitude)
+                    distances[other.Name] = dist
+            # Sort by distance
+            ordered = OrderedDict(sorted(distances.items(), key=lambda item: item[1]))
+            result[capital.Name] = ordered
+
+        return result
+
+def get_capital_by_city_name(name: str) -> Capital:
+    """
+    Retrieve a capital object by its name.
+
+    :param name: The name of the capital to retrieve.
+    :return: The Capital object with the corresponding name, or None if not found.
+    """
+    capitals = Capital.create_state_capitals()
+    for capital in capitals:
+        if capital.Name == name:
+            return capital
+    return None

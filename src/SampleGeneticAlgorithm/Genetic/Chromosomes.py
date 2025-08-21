@@ -6,10 +6,19 @@ class Chromosome:
     """
     A class representing a set of chromosomes, each containing a list of genes.
     """
-    def __init__(self, original_genes:
-        Genes = None):
-        self.genes = Capital.create_state_capitals()
-        random.shuffle(self.genes)  # Shuffle the genes to create a random order
+    def __init__(self,
+                 original_genes:Genes = None,
+                 starting_gene:Genes = None):
+        all_genes = Capital.create_state_capitals()
+        self.genes = self.genes = all_genes[:]
+        if starting_gene is not None:
+            other_genes = [gene for gene in all_genes if gene != starting_gene]
+            random.shuffle(other_genes)  # Shuffle the other genes to create a random order
+            print(f"Initializing chromosome with provided starting gene: {starting_gene}.")
+            self.genes = [starting_gene] + other_genes
+        else:
+            random.shuffle(self.genes)  # Shuffle the genes to create a random order
+        self.starting_gene = starting_gene if starting_gene else random.sample(Capital.create_state_capitals(), 1)
         self.original_genes = original_genes if original_genes else Capital.create_state_capitals()
         self.fitness = float('inf')  # Initialize fitness to infinity
 

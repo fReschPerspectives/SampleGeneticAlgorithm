@@ -9,7 +9,7 @@ class Population:
     It provides methods to get and set the individuals in the population.
     """
 
-    def __init__(self, population_size, individual_class, genes = None,
+    def __init__(self, population_size, individual_class, starting_gene = None, genes = None,
                  min_travel_distance=None, best_individual=None, mutation_rate=0.025,
                  cross_over_rate=0.25):
         """
@@ -22,6 +22,7 @@ class Population:
 
         :param population_size:
         :param individual_class:
+        :param starting_gene: A gene to start the population with, if applicable.
         :param genes:
         :param min_travel_distance:
         :param best_individual:
@@ -30,9 +31,16 @@ class Population:
         """
         self.population_size = population_size
         self.individual_class = individual_class
+        self.starting_gene = starting_gene
         if genes:
+            print("Initializing population with provided genes.")
             self.individuals = [individual_class(genes) for _ in range(population_size)]
+        elif starting_gene:
+            print("Initializing population with starting gene.")
+            self.individuals = [individual_class(starting_gene=self.starting_gene) for _ in range(population_size)]
         else:
+            # If no genes or starting gene is provided, initialize with default genes
+            print("Initializing population with default genes.")
             self.individuals = [individual_class() for _ in range(population_size)]
         self.min_travel_distance = float('inf') if min_travel_distance is None else min_travel_distance
         self.best_individual = best_individual if best_individual else None

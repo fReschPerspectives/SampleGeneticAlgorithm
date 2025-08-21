@@ -1,10 +1,11 @@
 from SampleGeneticAlgorithm.Genetic.Chromosomes import Chromosome
 from SampleGeneticAlgorithm.Genetic.Breeding import Breeding
 from SampleGeneticAlgorithm.Genetic.Population import Population
+from SampleGeneticAlgorithm.Capitals.Capital import get_capital_by_city_name
 import os
 
 if __name__ == "__main__":
-    os.add_dll_directory("C:\\gdal-3.11.3-proj-9.6.2-arm64\\bin") # annoying bit to get pyogrio to import without complaining
+    #os.add_dll_directory("C:\\gdal-3.11.3-proj-9.6.2-arm64\\bin") # annoying bit to get pyogrio to import without complaining
     from SampleGeneticAlgorithm.General_Utils.Plotting import plot_trail
 
     # Create a population of chromosomes
@@ -12,7 +13,7 @@ if __name__ == "__main__":
 
     # Initialize the population with a specified size and individual class
     # Each individual is a Chromosome object initialized with a set of genes
-    population = Population(initial_population_size, Chromosome, mutation_rate=0.06, cross_over_rate=0.06)
+    population = Population(initial_population_size, Chromosome, starting_gene=get_capital_by_city_name(name = "Denver"), mutation_rate=0.06, cross_over_rate=0.06)
 
     # Calculate the fitness of each individual in the population
     from SampleGeneticAlgorithm.General_Utils.Loss_Functions import calculate_fitness
