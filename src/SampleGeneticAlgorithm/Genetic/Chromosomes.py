@@ -47,32 +47,53 @@ class Chromosome:
 
         return Chromosome(new_genes)
 
-
-    def mutate(self, mutation_rate):
+    def mutate(self, mutation_rate, mode="swap", max_chunk_size=3):
         """
-        Mutate the genes based on the mutation rate; i.e. for each gene,
-        pop the element with a probability equal to the mutation rate.
-        Then reorder the popped elements randomly. and place back into the
-        genes list.
+        Mutate the genes based on the mutation rate using different strategies.
 
-        :param mutation_rate: Probability of mutation for each gene.
+        :param mutation_rate: Float [0,1] indicating mutation intensity.
+        :param mode: Mutation type: "swap", "chunk", or "shuffle".
+        :param max_chunk_size: For "chunk" mode, maximum size of chunks to swap.
         """
 
-        # Store popped elements to reorder them later
-        popped_elements = []
-        popped_indices = []
+        n = len(self.genes)
+        num_mutations = max(1, int(mutation_rate * n))
 
-        for i in range(len(self.genes)):
-            if random.random() < mutation_rate:
-                popped_elements.append(self.genes[i])
-                popped_indices.append(i)
+        if mode == "swap":
+            # Swap individual elements
+            for _ in range(num_mutations):
+                i, j = random.sample(range(n), 2)
+                self.genes[i], self.genes[j] = self.genes[j], self.genes[i]
 
-        # Shuffle the popped elements
-        random.shuffle(popped_elements)
+        elif mode == "chunk":
+            # Swap entire chunks of the array
+            for _ in range(num_mutations):
+                chunk_size = random.randint(1, max_chunk_size)
+                if chunk_size * 2 > n:
+                    continue  # Not enough space for two chunks
 
-        # Replace the original genes with the shuffled popped elements
-        for i in range(len(popped_indices)):
-            self.genes[popped_indices[i]] = popped_elements[i]
+                start1 = random.randint(0, n - chunk_size)
+                start2 = random.randint(0, n - chunk_size)
+
+                # Avoid overlapping chunks
+                if abs(start1 - start2) < chunk_size:
+                    continue
+
+                # Swap the chunks
+                for i in range(chunk_size):
+                    self.genes[start1 + i], self.genes[start2 + i] = self.genes[start2 + i], self.genes[start1 + i]
+
+        elif mode == "shuffle":
+            # Randomly select a subset of indices and shuffle the elements
+            num_indices = min(n, max(2, int(mutation_rate * n)))
+            indices = random.sample(range(n), num_indices)
+            values = [self.genes[i] for i in indices]
+            random.shuffle(values)
+            for idx, val in zip(indices, values):
+                self.genes[idx] = val
+
+        else:
+            raise ValueError(f"Unsupported mutation mode: {mode}")
 
 
     def repair_chromosome(self):

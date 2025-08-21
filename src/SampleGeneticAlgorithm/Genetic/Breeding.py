@@ -31,14 +31,29 @@ class Breeding(Population):
 
         # create elite mutants
         elite_mutants = []
-        for i in range(init_population_size):
-            elite_mutant = elite_mutated.mutate(mutation_rate=self.mutation_rate)  # Mutate the
+        for i in range(init_population_size // 3):  # Create a number of elite mutants based on the initial population size
+            elite_copy = copy.deepcopy(elite)  # Create a fresh copy each time
+            elite_mutant = elite_copy.mutate(mutation_rate=self.mutation_rate, mode="shuffle")  # Mutate the
             elite_mutants.append(elite_mutant)
+            del elite_copy
+
+        for i in range(init_population_size // 3):
+            elite_copy = copy.deepcopy(elite_mutated)  # Create a fresh copy each time
+            elite_mutant = elite_copy.mutate(mutation_rate=self.mutation_rate, mode="chunk", max_chunk_size=3)  # Mutate the elite individual with a chunk mutation
+            elite_mutants.append(elite_mutant)  # Add the mutated elite individual to the list of elite mutants
+            del elite_copy  # Clear the copy to free up memory
+
+        for i in range(init_population_size // 3):
+            elite_copy = copy.deepcopy(elite_mutated)
+            elite_mutant = elite_copy.mutate(mutation_rate=self.mutation_rate, mode="swap")  # Mutate the elite individual with a swap mutation
+            elite_mutants.append(elite_mutant)  # Add the mutated elite individual to the list of elite mutants
+            del elite_copy # Clear the copy to free up memory
 
         elite_mutants_population = Population(population_size=len(elite_mutants),
                                               individual_class=self.individual_class,
                                               genes=elite_mutants)
         elite_mutants_population.calculate_fitness(calculate_fitness)  # Calculate the fitness of the elite mutants
+        del elite_mutants  # Clear the elite mutants list to free up memory
 
         individuals = copy.deepcopy(sorted(self.get_individuals(), key = lambda obj: obj.fitness)) # Get the list of individuals in the population
 

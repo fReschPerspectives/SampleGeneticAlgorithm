@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     # Initialize the population with a specified size and individual class
     # Each individual is a Chromosome object initialized with a set of genes
-    population = Population(initial_population_size, Chromosome, mutation_rate=0.015)
+    population = Population(initial_population_size, Chromosome, mutation_rate=0.06)
 
     # Calculate the fitness of each individual in the population
     from SampleGeneticAlgorithm.General_Utils.Loss_Functions import calculate_fitness
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     print(f"Initial Best Fitness: {population.best_individual.fitness}")
 
     # Define the number of generations to iterate through:
-    num_generations = 75
+    num_generations = 500
     for i in range(num_generations):
         print(f"Generation {i + 1}: Best Fitness = {population.best_individual.fitness}")
 
