@@ -8,11 +8,11 @@ if __name__ == "__main__":
     from SampleGeneticAlgorithm.General_Utils.Plotting import plot_trail
 
     # Create a population of chromosomes
-    initial_population_size = 50
+    initial_population_size = 200
 
     # Initialize the population with a specified size and individual class
     # Each individual is a Chromosome object initialized with a set of genes
-    population = Population(initial_population_size, Chromosome, mutation_rate=0.15)
+    population = Population(initial_population_size, Chromosome, mutation_rate=0.015)
 
     # Calculate the fitness of each individual in the population
     from SampleGeneticAlgorithm.General_Utils.Loss_Functions import calculate_fitness
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     print(f"Initial Best Fitness: {population.best_individual.fitness}")
 
     # Define the number of generations to iterate through:
-    num_generations = 200
+    num_generations = 75
     for i in range(num_generations):
         print(f"Generation {i + 1}: Best Fitness = {population.best_individual.fitness}")
 
@@ -33,10 +33,12 @@ if __name__ == "__main__":
         new_generation = breeding.breed()
 
         # Update the population with the new generation
+        population.individuals.clear()
         population = new_generation
 
-        latitudes = [gene.Latitude for gene in population.best_individual.get_genes()]
-        longitudes = [gene.Longitude for gene in population.best_individual.get_genes()]
+        best_genes = population.best_individual.get_genes()
+        latitudes = [gene.Latitude for gene in best_genes]
+        longitudes = [gene.Longitude for gene in best_genes]
         # Plot the trail of the best individual in the population
         plot_trail(latitudes,
                    longitudes,

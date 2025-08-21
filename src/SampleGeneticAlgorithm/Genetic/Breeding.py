@@ -32,8 +32,7 @@ class Breeding(Population):
         # create elite mutants
         elite_mutants = []
         for i in range(init_population_size):
-            elite_mutant = copy.deepcopy(elite_mutated)
-            elite_mutant.mutate(mutation_rate=self.mutation_rate)  # Mutate the
+            elite_mutant = elite_mutated.mutate(mutation_rate=self.mutation_rate)  # Mutate the
             elite_mutants.append(elite_mutant)
 
         elite_mutants_population = Population(population_size=len(elite_mutants),
@@ -101,4 +100,5 @@ class Breeding(Population):
         new_population.min_travel_distance = most_fit_individuals[0].fitness  # Set the minimum travel distance to the fitness of the best individual
         new_population.best_individual = most_fit_individuals[0]  # Set the best individual to the first individual in the sorted list
 
+        self.population = None  # Clear the current population to free up memory
         return new_population  # return the next generation population
