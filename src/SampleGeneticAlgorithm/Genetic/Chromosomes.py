@@ -79,7 +79,9 @@ class Chromosome:
     def insert_mutation(self, mutation_rate: float):
         # Pair city names and their capital objects together
         # Repair this chromosome first to ensure no duplicates
-        if len(self.genes) != 50:
+        n = len(self.genes)
+
+        if n != 50:
             capital_objects = repair_chromosome(set(self.genes), self.genes)
         else:
             capital_objects = self.genes[:]
@@ -91,8 +93,26 @@ class Chromosome:
 
         # Compute how many mutations to perform
         num_mutations = max(int(len(capital_pairs) * mutation_rate), 1)
-        indices = random.sample(range(len(capital_pairs)), num_mutations)
 
+        # Compute the haversine distance between capitals
+        # Calculate weights: prefer indices whose neighbors are far
+        capital_distances = Capital.get_capital_distances()
+        n = len(capital_pairs)
+        weights = []
+        for i, (name, _) in enumerate(capital_pairs):
+            prev = capital_pairs[(i - 1) % n][0]
+            nxt = capital_pairs[(i + 1) % n][0]
+            distances = capital_distances.get(name, {})
+            max_distance = max(distances.values(), default=1)
+            dist_prev = distances.get(prev, 0)
+            dist_next = distances.get(nxt, 0)
+            weight = (dist_prev + dist_next + 1e-6) / (2 * max_distance)
+            weights.append(weight)
+
+        # Grab the indices to mutate based on weights
+        indices = random.choices(range(len(capital_pairs)), weights=weights, k = num_mutations)
+
+        # Select the base cities for mutation
         selected_pairs = [capital_pairs[i] for i in indices]
 
         for i, (base_city, _) in zip(indices, selected_pairs):
