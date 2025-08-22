@@ -35,6 +35,8 @@ class Breeding(Population):
         Perform breeding on the current population to create a new generation.
         This involves selecting parents, performing crossover, and applying mutation.
         """
+        self.mutation_rate = ((self.iterations - self.generation)/self.iterations) * self.mutation_rate # Decay mutation rate for diversity
+
         elite = self.best_individual  # Get the best individual from the current population
 
         # Create mutants of the elite individual

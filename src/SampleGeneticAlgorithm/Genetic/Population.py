@@ -11,7 +11,7 @@ class Population:
 
     def __init__(self, population_size, individual_class, starting_gene = None, genes = None,
                  min_travel_distance=None, best_individual=None, mutation_rate=0.025,
-                 cross_over_rate=0.25, generation=0):
+                 cross_over_rate=0.25, generation=0, iterations=500):
         """
         Initialize the population with a specified size and individual class.
         Each individual in the population is an instance of the provided individual class.
@@ -28,6 +28,8 @@ class Population:
         :param best_individual:
         :param mutation_rate:
         :param cross_over_rate: Probability of crossover between parents during breeding.
+        :param generation: Current generation number.
+        :param iterations: Total number of iterations for the genetic algorithm.
         """
         self.population_size = population_size
         self.individual_class = individual_class
@@ -47,6 +49,7 @@ class Population:
         self.mutation_rate = mutation_rate if mutation_rate is not None else 0.025
         self.cross_over_rate = cross_over_rate if cross_over_rate is not None else 0.25
         self.generation = generation if generation is not None else 0
+        self.iterations = iterations if iterations is not None else 500
 
     def get_individuals(self):
         return self.individuals

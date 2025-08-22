@@ -1,6 +1,9 @@
 import geopandas as gpd
+import matplotlib
+matplotlib.use('TkAgg')  # Use Qt5 backend for non-blocking plots
 import matplotlib.pyplot as plt
 import os
+import platform
 
 # Module-level cache
 _cached_usa = None
@@ -56,6 +59,9 @@ def plot_trail(latitudes, longitudes, title="Trail Map"):
     plt.savefig(save_path, bbox_inches='tight')
     print(f"Plot saved to: {save_path}")
 
-    plt.show(block=False)
-    plt.pause(2)
-    plt.close(fig)
+    if platform.system() == "Darwin":  # macOS
+        pass
+    else:
+        plt.show(block=False)
+        plt.pause(2)
+        plt.close(fig)

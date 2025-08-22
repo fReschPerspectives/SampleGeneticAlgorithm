@@ -39,6 +39,7 @@ if __name__ == "__main__":
         population.individuals.clear()
         population = new_generation
         population.generation +=1
+        population.iterations = 500
 
         best_genes = population.best_individual.get_genes()
         latitudes = [gene.Latitude for gene in best_genes]
@@ -49,7 +50,7 @@ if __name__ == "__main__":
         if (new_best_fitness != previous_best_fitness) or (i == 0):
             plot_trail(latitudes,
                        longitudes,
-                       title=f"Generation {i + 1} - Best Fitness: {population.best_individual.fitness}",
+                       title=f"Generation {i + 1} - Best Fitness - {population.best_individual.fitness}",
                       )
 
     print(f"Final Best Fitness: {population.best_individual.fitness}")
