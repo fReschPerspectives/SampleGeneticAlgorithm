@@ -14,6 +14,8 @@ if __name__ == "__main__":
     # Initialize the population with a specified size and individual class
     # Each individual is a Chromosome object initialized with a set of genes
     population = Population(initial_population_size, Chromosome, starting_gene=get_capital_by_city_name(name = "Denver"), mutation_rate=0.06, cross_over_rate=0.06)
+    print(f"Population initialized with {len(population.individuals)} individuals.")
+    print(f"Population initialized with mutation rate: {population.mutation_rate}, crossover rate: {population.cross_over_rate}")
 
     # Calculate the fitness of each individual in the population
     from SampleGeneticAlgorithm.General_Utils.Loss_Functions import calculate_fitness
