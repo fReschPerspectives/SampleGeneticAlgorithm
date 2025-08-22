@@ -38,6 +38,7 @@ if __name__ == "__main__":
         # Update the population with the new generation
         population.individuals.clear()
         population = new_generation
+        population.generation +=1
 
         best_genes = population.best_individual.get_genes()
         latitudes = [gene.Latitude for gene in best_genes]

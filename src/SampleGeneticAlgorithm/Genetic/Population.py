@@ -11,7 +11,7 @@ class Population:
 
     def __init__(self, population_size, individual_class, starting_gene = None, genes = None,
                  min_travel_distance=None, best_individual=None, mutation_rate=0.025,
-                 cross_over_rate=0.25):
+                 cross_over_rate=0.25, generation=0):
         """
         Initialize the population with a specified size and individual class.
         Each individual in the population is an instance of the provided individual class.
@@ -46,7 +46,7 @@ class Population:
         self.best_individual = best_individual if best_individual else None
         self.mutation_rate = mutation_rate if mutation_rate is not None else 0.025
         self.cross_over_rate = cross_over_rate if cross_over_rate is not None else 0.25
-
+        self.generation = generation if generation is not None else 0
 
     def get_individuals(self):
         return self.individuals

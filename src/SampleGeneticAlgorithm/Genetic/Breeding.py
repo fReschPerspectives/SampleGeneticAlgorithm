@@ -20,6 +20,16 @@ class Breeding(Population):
             mutation_rate=population.mutation_rate
             )
 
+    def __deepcopy__(self, memo):
+        # Only copy relevant attributes
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if k not in ['population', 'parent']:  # skip recursive or unnecessary refs
+                setattr(result, k, copy.deepcopy(v, memo))
+        return result
+
     def breed(self):
         """
         Perform breeding on the current population to create a new generation.
@@ -27,14 +37,25 @@ class Breeding(Population):
         """
         elite = self.best_individual  # Get the best individual from the current population
 
-        init_population_size = self.population_size  # Get the current population size
+        # Create mutants of the elite individual
+        elite_mutants = []
+        for i in range(25):  # Mutate the elite individual a few times to create diversity
+            mutant = copy.deepcopy(elite).mutate(self.mutation_rate)
+            elite_mutants.append(mutant)
+            del mutant
 
+        elite_mutants_population = Population(population_size=len(elite_mutants), individual_class=self.individual_class, genes=elite_mutants)  # Create a new population with the elite mutants
+        elite_mutants_population.calculate_fitness(calculate_fitness)  # Calculate the fitness of the elite mutants
+
+        # Create the children population
+        init_population_size = self.population_size  # Get the current population size
         individuals = sorted(self.get_individuals(), key = lambda obj: obj.fitness) # Get the list of individuals in the population
 
         # Select the top 50% of individuals as parents
         parents = individuals[:len(individuals) // 2]  # Select the top
         children = []
 
+        # Create the pairs
         parent_pairs = list(itertools.combinations(parents, 2))  # Create pairs of parents for crossover
 
         from tqdm import tqdm
@@ -54,6 +75,9 @@ class Breeding(Population):
 
         # Assess the fitness of the new population
         child_population.calculate_fitness(calculate_fitness)  # Calculate the fitness of each child in the new population
+
+        print(f"Elite population size: {len(elite_mutants_population.get_individuals())}")  # Print the size of the elite mutants population
+        print(f"Elite population minimum fitness: {elite_mutants_population.min_travel_distance}")  # Print the minimum travel distance of the elite mutants population
         print(f"Child population size: {len(child_population.get_individuals())}")  # Print the size of the child population
         print(f"Children population minimum fitness: {child_population.min_travel_distance}")  # Print the minimum travel distance of the child population
         print(f"Total population size: {len(individuals) + len(children) + len(parents)}")  # Print the total population size after breeding
@@ -64,8 +88,11 @@ class Breeding(Population):
         new_individuals_population = Population(population_size=len(new_individuals), individual_class=self.individual_class, genes=new_individuals)  # Create a new population with the new individuals
         new_individuals_population.calculate_fitness(calculate_fitness)  # Calculate the fitness of the new individuals
 
+        print(f"New individuals population size: {len(new_individuals_population.get_individuals())}")  # Print the size of the new individuals population
+        print(f"New individuals population minimum fitness: {new_individuals_population.min_travel_distance}")  # Print the minimum travel distance of the new individuals population
+
         # Combine the parent population with the child population and mutated parents
-        total_pool = [elite] + new_individuals_population.get_individuals() + child_population.get_individuals()  # Combine the current population with the new children
+        total_pool = [elite] + elite_mutants_population.get_individuals() + new_individuals_population.get_individuals() + child_population.get_individuals()  # Combine the current population with the new children
         total_pool = sorted(total_pool, key = lambda obj: obj.fitness) # Sort the combined pool by fitness
 
         most_fit_individuals = total_pool[:init_population_size]  # Select the most fit individuals to form the new generation
