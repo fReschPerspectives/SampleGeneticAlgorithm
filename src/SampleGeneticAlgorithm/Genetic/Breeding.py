@@ -41,10 +41,22 @@ class Breeding(Population):
         Perform breeding on the current population to create a new generation.
         This involves selecting parents, performing crossover, and applying mutation.
         """
-        ##TODO: fix the mutation and crossover rate decay to be exponential rather than linear
-        self.mutation_rate = ((self.iterations - self.generation)/self.iterations) * self.mutation_rate # Decay mutation rate for diversity
-        self.cross_over_rate = ((self.iterations - self.generation)/self.iterations) * self.cross_over_rate # Decay mutation rate for diversity
+        # Constants
+        if self.generations_without_improvement >= self.max_allowed_generations_without_improvement:
+            print(f"Max generations without improvement reached ({self.generations_without_improvement}). Resetting counter.")
+            self.generations_for_rate_reset = 0 # Reset the counter for generations without improvement
+            self.generations_without_improvement = self.generations_without_improvement / 2 # Reset the counter for generations without improvement even though it may not result in improvement since we don't want to get in a loop where we keep rates resetting to initial values
+            # Reset mutation and crossover rates to their maximum values
+            self.mutation_rate = self.max_mutation_rate
+            self.cross_over_rate = self.max_cross_over_rate
+        else:
+            gamma = 0.95  # decay factor between 0 and 1
 
+            # New rates after decay
+            self.mutation_rate = self.initial_mutation_rate * (gamma ** (self.generations_for_rate_reset + 1e-6)) # Decay mutation rate over generations while avoiding zero, resets if no improvement for a set number of generations
+            self.cross_over_rate = self.initial_cross_over_rate * (gamma ** (self.generations_for_rate_reset + 1e-6)) # Decay crossover rate over generations while avoiding zero, resets if no improvement for a set number of generations
+
+        # Debugging output
         print(f"Generation: {self.generation + 1}, Mutation Rate: {self.mutation_rate}, Crossover Rate: {self.cross_over_rate}")
 
         elite = self.best_individual  # Get the best individual from the current population

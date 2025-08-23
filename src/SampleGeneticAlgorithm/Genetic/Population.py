@@ -18,10 +18,11 @@ class Population:
                  individuals=None,
                  iterations=500,
                  generation=0,
+                 generations_without_improvement=0,
                  mutation_rate=0.025,
                  cross_over_rate=0.25,
                  min_travel_distance=None,
-                 best_individual=None, ):
+                 best_individual=None,):
         """
         Initialize the population with a specified size and individual class.
         Each individual in the population is an instance of the provided individual class.
@@ -73,7 +74,14 @@ class Population:
         self.generation = generation if generation is not None else 0
         self.iterations = iterations if iterations is not None else 500
         self.mutation_rate = mutation_rate if mutation_rate is not None else 0.025
+        self.initial_mutation_rate = self.mutation_rate
+        self.max_mutation_rate = self.mutation_rate
         self.cross_over_rate = cross_over_rate if cross_over_rate is not None else 0.25
+        self.initial_cross_over_rate = self.cross_over_rate
+        self.max_cross_over_rate = self.cross_over_rate
+        self.generations_without_improvement = 0
+        self.generations_for_rate_reset = 0
+        self.max_allowed_generations_without_improvement = 100
         self.min_travel_distance = float('inf') if min_travel_distance is None else min_travel_distance
         self.best_individual = best_individual if best_individual else None
 

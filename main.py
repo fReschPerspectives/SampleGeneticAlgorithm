@@ -58,9 +58,14 @@ if __name__ == "__main__":
         # Plot the trail of the best individual in the population if different from the previous generation
         new_best_fitness = population.best_individual.fitness
         if (new_best_fitness != previous_best_fitness) or (i == 0):
+            population.generations_without_improvement = 0 # Reset since improvement was seen
+            population.generations_for_rate_reset +=1 # Increment since improvement was seen, we want to continue to decrease rates
             plot_trail(latitudes,
                        longitudes,
                        title=f"Generation {i + 1} - Best Fitness - {population.best_individual.fitness}",
                       )
+        else:
+            population.generations_without_improvement +=1
+            population.generations_for_rate_reset +=1
 
     print(f"Final Best Fitness: {population.best_individual.fitness}")
