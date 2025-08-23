@@ -33,7 +33,7 @@ if __name__ == "__main__":
               )
 
     # Define the number of generations to iterate through:
-    num_generations = 500
+    num_generations = 2500
     for i in range(num_generations):
         print(f"Generation {i + 1}: Best Fitness = {population.best_individual.fitness}")
 

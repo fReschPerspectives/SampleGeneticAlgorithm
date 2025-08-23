@@ -1,6 +1,5 @@
 import geopandas as gpd
 import matplotlib
-matplotlib.use('TkAgg')  # Use Qt5 backend for non-blocking plots
 import matplotlib.pyplot as plt
 import os
 import platform
@@ -23,49 +22,52 @@ def plot_trail(latitudes, longitudes, title="Trail Map"):
     The trail loops back to the first point, first segment is green, last is purple,
     and all others are blue.
     """
-    usa = get_usa_geometry()
+    try:
+        usa = get_usa_geometry()
 
-    fig, ax = plt.subplots(figsize=(15, 10))
-    usa.plot(ax=ax, alpha=0.5, color='lightgray', edgecolor='black')
+        fig, ax = plt.subplots(figsize=(15, 10))
+        usa.plot(ax=ax, alpha=0.5, color='lightgray', edgecolor='black')
 
-    # Loop through points, including loop back to first
-    total_points = len(latitudes)
-    for idx in range(total_points):
-        start_lon = longitudes[idx]
-        start_lat = latitudes[idx]
-        # wrap to first point
-        end_lon = longitudes[(idx + 1) % total_points]
-        end_lat = latitudes[(idx + 1) % total_points]
+        # Loop through points, including loop back to first
+        total_points = len(latitudes)
+        for idx in range(total_points):
+            start_lon = longitudes[idx]
+            start_lat = latitudes[idx]
+            # wrap to first point
+            end_lon = longitudes[(idx + 1) % total_points]
+            end_lat = latitudes[(idx + 1) % total_points]
 
-        # Color logic
-        if idx == 0:
-            segment_color = 'green'
-        elif idx == total_points - 1:
-            segment_color = 'purple'
+            # Color logic
+            if idx == 0:
+                segment_color = 'green'
+            elif idx == total_points - 1:
+                segment_color = 'purple'
+            else:
+                segment_color = 'blue'
+
+            ax.plot([start_lon, end_lon], [start_lat, end_lat],
+                    color=segment_color, linewidth=2, zorder=2)
+
+        # Plot all points for clarity
+        ax.scatter(longitudes, latitudes, c='black', s=50, zorder=3)
+
+        ax.set_xlim([-125, -65])
+        ax.set_ylim([25, 50])
+        ax.set_title(title)
+        ax.set_xlabel("Longitude")
+        ax.set_ylabel("Latitude")
+
+        save_dir = os.path.join(os.getcwd(), "plots")
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = os.path.join(save_dir, f"{title.replace(' ', '_').lower()}.png")
+        plt.savefig(save_path, bbox_inches='tight')
+        print(f"Plot saved to: {save_path}")
+
+        if platform.system() == "Darwin":
+            plt.close(fig)
         else:
-            segment_color = 'blue'
-
-        ax.plot([start_lon, end_lon], [start_lat, end_lat],
-                color=segment_color, linewidth=2, zorder=2)
-
-    # Plot all points for clarity
-    ax.scatter(longitudes, latitudes, c='black', s=50, zorder=3)
-
-    ax.set_xlim([-125, -65])
-    ax.set_ylim([25, 50])
-    ax.set_title(title)
-    ax.set_xlabel("Longitude")
-    ax.set_ylabel("Latitude")
-
-    save_dir = os.path.join(os.getcwd(), "plots")
-    os.makedirs(save_dir, exist_ok=True)
-    save_path = os.path.join(save_dir, f"{title.replace(' ', '_').lower()}.png")
-    plt.savefig(save_path, bbox_inches='tight')
-    print(f"Plot saved to: {save_path}")
-
-    if platform.system() == "Darwin":
-        plt.close(fig)
-    else:
-        plt.show(block=False)
-        plt.pause(2)
-        plt.close(fig)
+            plt.show(block=False)
+            plt.pause(2)
+            plt.close(fig)
+    except Exception as e:
+        print(f"Error plotting trail: {e}")
