@@ -10,7 +10,7 @@ if __name__ == "__main__":
     from SampleGeneticAlgorithm.General_Utils.Plotting import plot_trail
 
     # Create a population of chromosomes
-    initial_population_size = 150  # Define the initial population size
+    initial_population_size = 250  # Define the initial population size
 
     # Initialize the population with a specified size and individual class
     # Each individual is a Chromosome object initialized with a set of genes

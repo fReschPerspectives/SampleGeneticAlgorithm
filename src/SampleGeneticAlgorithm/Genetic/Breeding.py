@@ -50,7 +50,7 @@ class Breeding(Population):
             self.mutation_rate = self.max_mutation_rate
             self.cross_over_rate = self.max_cross_over_rate
         else:
-            gamma = 0.95  # decay factor between 0 and 1
+            gamma = 0.975  # decay factor between 0 and 1
 
             # New rates after decay
             self.mutation_rate = self.initial_mutation_rate * (gamma ** (self.generations_for_rate_reset + 1e-6)) # Decay mutation rate over generations while avoiding zero, resets if no improvement for a set number of generations
@@ -63,7 +63,7 @@ class Breeding(Population):
 
         # Create mutants of the elite individual
         elite_mutants = []
-        for i in range(2):  # Mutate the elite individual a few times to create diversity
+        for i in range(int(len(self.individuals) // 4)):  # Mutate the elite individual a few times to create diversity
             mutant = copy.deepcopy(elite)
             mutant.mutate(self.mutation_rate)
             elite_mutants.append(mutant)
