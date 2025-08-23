@@ -309,16 +309,23 @@ class Chromosome:
         # Randomly choose a mutation mode
         mode = random.choice(["swap", "chunk", "shuffle", "insert"])
 
+        # Randomly choose whether to use weights for swap and insert mutations
+        if mode in ["swap", "insert"]:
+            use_weights = random.choice([True, False])
+            print(f"Using weights for {mode} mutation: {use_weights}")
+        else:
+            use_weights = False
+
         print(f"Applying {mode} mutation with rate {mutation_rate}")
 
         if mode == "swap":
-            self.swap_mutation(mutation_rate)
+            self.swap_mutation(mutation_rate, use_weights=use_weights)
         elif mode == "chunk":
             self.chunk_mutation(mutation_rate, max_chunk_size)
         elif mode == "shuffle":
             self.shuffle_mutation(mutation_rate)
         elif mode == "insert":
-            self.insert_mutation(mutation_rate)
+            self.insert_mutation(mutation_rate, use_weights=use_weights)
         else:
             raise ValueError(f"Unsupported mutation mode: {mode}")
 

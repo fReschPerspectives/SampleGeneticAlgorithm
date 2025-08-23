@@ -81,7 +81,7 @@ class Population:
         self.max_cross_over_rate = self.cross_over_rate
         self.generations_without_improvement = 0
         self.generations_for_rate_reset = 0
-        self.max_allowed_generations_without_improvement = 100
+        self.max_allowed_generations_without_improvement = 50
         self.min_travel_distance = float('inf') if min_travel_distance is None else min_travel_distance
         self.best_individual = best_individual if best_individual else None
 
