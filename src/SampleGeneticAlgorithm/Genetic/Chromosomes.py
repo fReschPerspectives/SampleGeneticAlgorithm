@@ -17,7 +17,7 @@ class Chromosome:
         self.starting_gene = starting_gene if starting_gene else random.choice(all_genes)
 
         if starting_gene is not None:
-            other_genes = [gene for gene in all_genes if gene != starting_gene]
+            other_genes = [gene for gene in all_genes if gene.Name != starting_gene.Name]
             random.shuffle(other_genes)  # Shuffle the other genes to create a random order
             print(f"Initializing chromosome with provided starting gene: {starting_gene}.")
             self.genes = [starting_gene] + other_genes
@@ -27,6 +27,14 @@ class Chromosome:
 
         self.fitness = float('inf')  # Initialize fitness to infinity
         self.length = len(self.original_genes) if length is None else length
+
+        print(f"Chromosome initialized with genes: {[gene.Name for gene in self.genes]}")
+        print(f"Chromosome length set to: {self.length}")
+        print(f"Observed gene count: {len(self.genes)}")
+
+        assert len(self.genes) == self.length, "Incorrect gene count after init"
+        assert len({g.Name for g in self.genes}) == self.length, "Extra genes in init!"
+
 
     def __str__(self):
         return f"Chromosomes(genes={self.genes})"
@@ -97,6 +105,9 @@ class Chromosome:
         # Repair this chromosome first to ensure no duplicates
         n = len(self.genes)
 
+        print(f"Applying insert mutation with rate {mutation_rate} on chromosome of length {n}")
+        print(f"Current genes: {[gene.Name for gene in self.genes]}")
+
         # Fix if somehow got a bad length
         if n != 50:
             self.repair_chromosome()
@@ -143,7 +154,12 @@ class Chromosome:
                 continue
 
             # Weighted selection based on inverse haversine distances
-            neighbor_candidates = list(neighbors.keys())
+            current_city_names = [name for name, _ in capital_pairs]
+            neighbor_candidates = [
+                city for city in neighbors.keys()
+                if city in current_city_names
+                    and (self.starting_gene is None or city != self.starting_gene.Name)
+            ]
             weights = [1 / (neighbors[n] + 1e-6) for n in neighbor_candidates]
 
             selected_neighbor = random.choices(neighbor_candidates, weights=weights, k=1)[0]
@@ -176,6 +192,9 @@ class Chromosome:
 
     def swap_mutation(self, mutation_rate, use_weights=False):
         n = len(self.genes)
+
+        print(f"Applying swap mutation with rate {mutation_rate} on chromosome of length {n}")
+        print(f"Current genes: {[gene.Name for gene in self.genes]}")
 
         # Repair this chromosome first to ensure no duplicates
         if n != 50:
@@ -227,6 +246,9 @@ class Chromosome:
     def chunk_mutation(self, mutation_rate, max_chunk_size=3):
         n = len(self.genes)
 
+        print(f"Applying chunk mutation with rate {mutation_rate} on chromosome of length {n}")
+        print(f"Current genes: {[gene.Name for gene in self.genes]}")
+
         # Repair this chromosome first to ensure no duplicates
         if n != 50:
             self.repair_chromosome()
@@ -254,6 +276,8 @@ class Chromosome:
 
     def shuffle_mutation(self, mutation_rate):
         n = len(self.genes)
+        print(f"Applying shuffle mutation with rate {mutation_rate} on chromosome of length {n}")
+        print(f"Current genes: {[gene.Name for gene in self.genes]}")
 
         # Repair this chromosome first to ensure no duplicates
         if n != 50:

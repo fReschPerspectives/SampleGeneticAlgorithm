@@ -12,6 +12,7 @@ class Population:
     def __init__(self,
                  population_size,
                  individual_class,
+                 desired_chromosome_length,
                  genes=None,
                  starting_gene = None,
                  individuals=None,
@@ -31,6 +32,7 @@ class Population:
 
         :param population_size: The size of the population.
         :param individual_class: The class to use for creating individuals in the population.
+        :param desired_chromosome_length: The desired length of the chromosome for each individual.
         :param genes: A list of genes to initialize each individual with, if applicable.
         :param starting_gene: A gene to start the population with, if applicable.
         :param individuals: A list of individuals to initialize the population with, if applicable.
@@ -53,21 +55,21 @@ class Population:
         else:
             if genes and starting_gene:
                 print("Initializing population with provided genes and starting gene.")
-                self.individuals = [individual_class(original_genes=genes, starting_gene=starting_gene)
+                self.individuals = [individual_class(original_genes=genes, starting_gene=starting_gene, length=desired_chromosome_length)
                                    for _ in range(population_size)]
             elif genes:
                 print("Initializing population with provided genes.")
-                self.individuals = [individual_class(original_genes=genes)
+                self.individuals = [individual_class(original_genes=genes, length=desired_chromosome_length)
                                    for _ in range(population_size)]
             elif starting_gene:
                 print("Initializing population with starting gene.")
-                self.individuals = [individual_class(starting_gene=self.starting_gene)
+                self.individuals = [individual_class(starting_gene=self.starting_gene, length=desired_chromosome_length)
                                    for _ in range(population_size)]
             else:
                 # If no genes or starting gene is provided, initialize with default genes
                 print("Initializing population with default genes.")
-                self.individuals = [individual_class() for _ in range(population_size)]
-
+                self.individuals = [individual_class(length=desired_chromosome_length) for _ in range(population_size)]
+        self.desired_chromosome_length = desired_chromosome_length if desired_chromosome_length else len(self.individuals[0].get_genes())
         self.generation = generation if generation is not None else 0
         self.iterations = iterations if iterations is not None else 500
         self.mutation_rate = mutation_rate if mutation_rate is not None else 0.025
