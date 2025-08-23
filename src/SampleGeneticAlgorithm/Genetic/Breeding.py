@@ -38,6 +38,7 @@ class Breeding(Population):
         Perform breeding on the current population to create a new generation.
         This involves selecting parents, performing crossover, and applying mutation.
         """
+        ##TODO: fix the mutation and crossover rate decay to be exponential rather than linear
         self.mutation_rate = ((self.iterations - self.generation)/self.iterations) * self.mutation_rate # Decay mutation rate for diversity
         self.cross_over_rate = ((self.iterations - self.generation)/self.iterations) * self.cross_over_rate # Decay mutation rate for diversity
 

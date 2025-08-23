@@ -76,7 +76,7 @@ class Chromosome:
 
     import random
 
-    def insert_mutation(self, mutation_rate: float):
+    def insert_mutation(self, mutation_rate: float, use_weights: bool = True):
         # Pair city names and their capital objects together
         # Repair this chromosome first to ensure no duplicates
         n = len(self.genes)
@@ -94,23 +94,26 @@ class Chromosome:
         # Compute how many mutations to perform
         num_mutations = max(int(len(capital_pairs) * mutation_rate), 1)
 
-        # Compute the haversine distance between capitals
-        # Calculate weights: prefer indices whose neighbors are far
-        capital_distances = Capital.get_capital_distances()
-        n = len(capital_pairs)
-        weights = []
-        for i, (name, _) in enumerate(capital_pairs):
-            prev = capital_pairs[(i - 1) % n][0]
-            nxt = capital_pairs[(i + 1) % n][0]
-            distances = capital_distances.get(name, {})
-            max_distance = max(distances.values(), default=1)
-            dist_prev = distances.get(prev, 0)
-            dist_next = distances.get(nxt, 0)
-            weight = (dist_prev + dist_next + 1e-6) / (2 * max_distance)
-            weights.append(weight)
+        if use_weights:
+            # Compute the haversine distance between capitals
+            # Calculate weights: prefer indices whose neighbors are far
+            capital_distances = Capital.get_capital_distances()
+            n = len(capital_pairs)
+            weights = []
+            for i, (name, _) in enumerate(capital_pairs):
+                prev = capital_pairs[(i - 1) % n][0]
+                nxt = capital_pairs[(i + 1) % n][0]
+                distances = capital_distances.get(name, {})
+                max_distance = max(distances.values(), default=1)
+                dist_prev = distances.get(prev, 0)
+                dist_next = distances.get(nxt, 0)
+                weight = (dist_prev + dist_next + 1e-6) / (2 * max_distance)
+                weights.append(weight)
 
-        # Grab the indices to mutate based on weights
-        indices = random.choices(range(len(capital_pairs)), weights=weights, k = num_mutations)
+            # Grab the indices to mutate based on weights
+            indices = random.choices(range(len(capital_pairs)), weights=weights, k = num_mutations)
+        else:
+            indices = random.sample(range(len(capital_pairs)), num_mutations)
 
         # Select the base cities for mutation
         selected_pairs = [capital_pairs[i] for i in indices]
@@ -148,11 +151,49 @@ class Chromosome:
         # Update genes
         self.genes = [capital for _, capital in capital_pairs]
 
-    def swap_mutation(self, mutation_rate):
+    def swap_mutation(self, mutation_rate, use_weights=False):
         n = len(self.genes)
+
+        # Repair this chromosome first to ensure no duplicates
+        if n != 50:
+            capital_objects = repair_chromosome(set(self.genes), self.genes)
+        else:
+            capital_objects = self.genes[:]
+
+        capital_pairs = [(capital.Name, capital) for capital in capital_objects]
+
+        # Test this is true or break
+        assert len(capital_pairs) == 50, "Expected 50 capital pairs initially"
+        assert len(set(name for name, _ in capital_pairs)) == 50, "Duplicate cities found initially"
+
+        # Compute how many mutations to perform
         num_mutations = max(1, int(mutation_rate * n))
+
+        # Determine indices to swap
+        if use_weights:
+            # Compute the haversine distance between capitals
+            # Calculate weights: prefer indices whose neighbors are far
+            capital_distances = Capital.get_capital_distances()
+            n = len(capital_pairs)
+            weights = []
+            for i, (name, _) in enumerate(capital_pairs):
+                prev = capital_pairs[(i - 1) % n][0]
+                nxt = capital_pairs[(i + 1) % n][0]
+                distances = capital_distances.get(name, {})
+                max_distance = max(distances.values(), default=1)
+                dist_prev = distances.get(prev, 0)
+                dist_next = distances.get(nxt, 0)
+                weight = (dist_prev + dist_next + 1e-6) / (2 * max_distance)
+                weights.append(weight)
+
+            # Grab the indices to mutate based on weights
+            indices = random.choices(range(len(capital_pairs)), weights=weights, k = num_mutations)
+        else:
+            # Randomly select indices to swap
+            indices = random.sample(range(len(capital_pairs)), 2*num_mutations)
+
         for _ in range(num_mutations):
-            i, j = random.sample(range(n), 2)
+            i, j = random.sample(indices, k= 2)
             self.genes[i], self.genes[j] = self.genes[j], self.genes[i]
 
     def chunk_mutation(self, mutation_rate, max_chunk_size=3):
