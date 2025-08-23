@@ -17,50 +17,54 @@ def get_usa_geometry():
         _cached_usa = world[world['NAME'] == 'United States of America']
     return _cached_usa
 
-
 def plot_trail(latitudes, longitudes, title="Trail Map"):
     """
-    Plot a trail on a US map given ordered lists of latitudes and longitudes.
-
-    Args:
-        latitudes (list): Ordered list of latitude points
-        longitudes (list): Ordered list of longitude points
-        title (str): Title for the plot
+    Plot a looping trail on a US map given ordered lists of latitudes and longitudes.
+    The trail loops back to the first point, first segment is green, last is purple,
+    and all others are blue.
     """
     usa = get_usa_geometry()
 
-    # Create the plot
     fig, ax = plt.subplots(figsize=(15, 10))
-
-    # Plot US base map
     usa.plot(ax=ax, alpha=0.5, color='lightgray', edgecolor='black')
 
-    # Plot the trail path
-    ax.plot(longitudes, latitudes, 'r-', linewidth=2, zorder=2)
+    # Loop through points, including loop back to first
+    total_points = len(latitudes)
+    for idx in range(total_points):
+        start_lon = longitudes[idx]
+        start_lat = latitudes[idx]
+        # wrap to first point
+        end_lon = longitudes[(idx + 1) % total_points]
+        end_lat = latitudes[(idx + 1) % total_points]
 
-    # Plot trail points
-    ax.scatter(longitudes, latitudes, c='blue', s=50, zorder=3)
+        # Color logic
+        if idx == 0:
+            segment_color = 'green'
+        elif idx == total_points - 1:
+            segment_color = 'purple'
+        else:
+            segment_color = 'blue'
 
-    # Set map bounds (Continental US)
+        ax.plot([start_lon, end_lon], [start_lat, end_lat],
+                color=segment_color, linewidth=2, zorder=2)
+
+    # Plot all points for clarity
+    ax.scatter(longitudes, latitudes, c='black', s=50, zorder=3)
+
     ax.set_xlim([-125, -65])
     ax.set_ylim([25, 50])
-
-    # Add labels
     ax.set_title(title)
     ax.set_xlabel("Longitude")
     ax.set_ylabel("Latitude")
 
-    # Create 'plots' directory if it doesn't exist
     save_dir = os.path.join(os.getcwd(), "plots")
     os.makedirs(save_dir, exist_ok=True)
-
-    # Save the figure
     save_path = os.path.join(save_dir, f"{title.replace(' ', '_').lower()}.png")
     plt.savefig(save_path, bbox_inches='tight')
     print(f"Plot saved to: {save_path}")
 
-    if platform.system() == "Darwin":  # macOS
-        pass
+    if platform.system() == "Darwin":
+        plt.close(fig)
     else:
         plt.show(block=False)
         plt.pause(2)

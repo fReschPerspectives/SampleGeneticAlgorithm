@@ -3,6 +3,7 @@ from SampleGeneticAlgorithm.Capitals.Capital import get_capital_by_city_name
 from SampleGeneticAlgorithm.Genetic.Genes import Genes
 import random
 
+##TODO: Update all the sanity checks to use length if present or len(self.original_genes) instead of hardcoding 50
 class Chromosome:
     """
     A class representing a set of chromosomes, each containing a list of genes.
@@ -100,6 +101,7 @@ class Chromosome:
 
     import random
 
+    ##TODO: Make calls to this randomize the use_weights parameter
     def insert_mutation(self, mutation_rate: float, use_weights: bool = True):
         # Pair city names and their capital objects together
         # Repair this chromosome first to ensure no duplicates
@@ -190,6 +192,7 @@ class Chromosome:
         self.genes=new_genes
         self.repair_chromosome()
 
+    ##TODO: Make calls to this randomize the use_weights parameter
     def swap_mutation(self, mutation_rate, use_weights=False):
         n = len(self.genes)
 
