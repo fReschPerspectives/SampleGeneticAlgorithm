@@ -12,15 +12,17 @@ class Breeding(Population):
 
     def __init__(self, population: Population):
         super().__init__(
-            population_size=population.population_size,
-            individual_class=population.individual_class,
-            genes=population.get_individuals(),
-            best_individual=population.best_individual,
-            min_travel_distance=population.min_travel_distance,
-            mutation_rate=population.mutation_rate,
-            cross_over_rate=population.cross_over_rate,
-            generation=population.generation,
-            iterations=population.iterations
+            population_size = population.population_size,
+            individual_class = population.individual_class,
+            genes = population.genes,
+            starting_gene = population.starting_gene,
+            individuals = population.individuals,
+            iterations = population.iterations,
+            generation = population.generation,
+            mutation_rate = population.mutation_rate,
+            cross_over_rate = population.cross_over_rate,
+            min_travel_distance = population.min_travel_distance,
+            best_individual = population.best_individual,
             )
 
     def __deepcopy__(self, memo):
@@ -48,17 +50,19 @@ class Breeding(Population):
 
         # Create mutants of the elite individual
         elite_mutants = []
-        for i in range(25):  # Mutate the elite individual a few times to create diversity
-            mutant = copy.deepcopy(elite).mutate(self.mutation_rate)
+        for i in range(2):  # Mutate the elite individual a few times to create diversity
+            mutant = copy.deepcopy(elite)
+            mutant.mutate(self.mutation_rate)
             elite_mutants.append(mutant)
             del mutant
 
-        elite_mutants_population = Population(population_size=len(elite_mutants), individual_class=self.individual_class, genes=elite_mutants, mutation_rate=self.mutation_rate, cross_over_rate=self.cross_over_rate, generation=self.generation, iterations=self.iterations)  # Create a new population with the elite mutants
+        elite_mutants_population = Population(population_size=len(elite_mutants), individual_class=self.individual_class, individuals=elite_mutants, mutation_rate=self.mutation_rate, cross_over_rate=self.cross_over_rate, generation=self.generation, iterations=self.iterations)  # Create a new population with the elite mutants
         elite_mutants_population.calculate_fitness(calculate_fitness)  # Calculate the fitness of the elite mutants
 
         # Create the children population
         init_population_size = self.population_size  # Get the current population size
-        individuals = sorted(self.get_individuals(), key = lambda obj: obj.fitness) # Get the list of individuals in the population
+        individuals = self.get_individuals()
+        individuals = sorted(individuals, key = lambda obj: obj.fitness) # Get the list of individuals in the population
 
         # Select the top 50% of individuals as parents
         parents = individuals[:len(individuals) // 2]  # Select the top
@@ -80,7 +84,7 @@ class Breeding(Population):
                 children.append(future.result())
 
         # Add the children to the new population
-        child_population = Population(population_size=len(children), individual_class=self.individual_class, genes=children, mutation_rate=self.mutation_rate, cross_over_rate=self.cross_over_rate, generation=self.generation, iterations=self.iterations)  # Create a new population with the children
+        child_population = Population(population_size=len(children), individual_class=self.individual_class, individuals=children, mutation_rate=self.mutation_rate, cross_over_rate=self.cross_over_rate, generation=self.generation, iterations=self.iterations)  # Create a new population with the children
 
         # Assess the fitness of the new population
         child_population.calculate_fitness(calculate_fitness)  # Calculate the fitness of each child in the new population
@@ -93,8 +97,8 @@ class Breeding(Population):
 
         # Add some completely new individuals to the population
         # This is optional and can be used to introduce new genetic material into the population
-        new_individuals = [self.individual_class() for _ in range(init_population_size // 4)]
-        new_individuals_population = Population(population_size=len(new_individuals), individual_class=self.individual_class, genes=new_individuals, mutation_rate=self.mutation_rate, cross_over_rate=self.cross_over_rate, generation=self.generation, iterations=self.iterations)  # Create a new population with the new individuals
+        #new_individuals = [self.individual_class(original_genes=self.genes, starting_gene=self.starting_gene) for _ in range(init_population_size // 4)]
+        new_individuals_population = Population(population_size=(init_population_size // 4), individual_class=self.individual_class, genes=self.genes, starting_gene=self.starting_gene, mutation_rate=self.mutation_rate, cross_over_rate=self.cross_over_rate, generation=self.generation, iterations=self.iterations)  # Create a new population with the new individuals
         new_individuals_population.calculate_fitness(calculate_fitness)  # Calculate the fitness of the new individuals
 
         print(f"New individuals population size: {len(new_individuals_population.get_individuals())}")  # Print the size of the new individuals population
@@ -106,7 +110,7 @@ class Breeding(Population):
 
         most_fit_individuals = total_pool[:init_population_size]  # Select the most fit individuals to form the new generation
 
-        new_population = Population(population_size=len(most_fit_individuals), individual_class=self.individual_class, genes=most_fit_individuals, mutation_rate=self.mutation_rate, cross_over_rate=self.cross_over_rate, generation=self.generation, iterations=self.iterations)  # Create a new population with the most fit individuals
+        new_population = Population(population_size=len(most_fit_individuals), individual_class=self.individual_class, genes=self.genes, starting_gene=self.starting_gene, individuals=most_fit_individuals, generation=self.generation, iterations=self.iterations, mutation_rate=self.mutation_rate, cross_over_rate=self.cross_over_rate)  # Create a new population with the most fit individuals
         new_population.min_travel_distance = most_fit_individuals[0].fitness  # Set the minimum travel distance to the fitness of the best individual
         new_population.best_individual = most_fit_individuals[0]  # Set the best individual to the first individual in the sorted list
 

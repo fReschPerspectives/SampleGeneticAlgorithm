@@ -9,19 +9,24 @@ class Chromosome:
     """
     def __init__(self,
                  original_genes:Genes = None,
-                 starting_gene:Genes = None):
-        all_genes = Capital.create_state_capitals()
-        self.genes = self.genes = all_genes[:]
+                 starting_gene:Genes = None,
+                 length: int = None):
+        all_genes = Capital.create_state_capitals() if original_genes is None else original_genes
+        self.original_genes = all_genes[:]
+
+        self.starting_gene = starting_gene if starting_gene else random.choice(all_genes)
+
         if starting_gene is not None:
             other_genes = [gene for gene in all_genes if gene != starting_gene]
             random.shuffle(other_genes)  # Shuffle the other genes to create a random order
             print(f"Initializing chromosome with provided starting gene: {starting_gene}.")
             self.genes = [starting_gene] + other_genes
         else:
+            self.genes = all_genes[:]
             random.shuffle(self.genes)  # Shuffle the genes to create a random order
-        self.starting_gene = starting_gene if starting_gene else random.sample(Capital.create_state_capitals(), 1)
-        self.original_genes = original_genes if original_genes else Capital.create_state_capitals()
+
         self.fitness = float('inf')  # Initialize fitness to infinity
+        self.length = len(self.original_genes) if length is None else length
 
     def __str__(self):
         return f"Chromosomes(genes={self.genes})"
@@ -50,9 +55,16 @@ class Chromosome:
         :param crossover_rate: Fraction of genes to use for crossover.
         :return: A new Chromosome object with crossover-applied genes.
         """
+        print(f"Performing crossover with rate {crossover_rate}")
+        print(f"Self genes: {[gene.Name for gene in self.genes]}")
+        print(f"Length of self genes: {len(self.genes)}")
+        print(f"Other genes: {[gene.Name for gene in other.genes]}")
+        print(f"Length of other genes: {len(other.genes)}")
 
         if len(self.genes) != len(other.genes):
-            raise ValueError("Chromosomes must have the same number of genes for crossover.")
+            print(f"Chromosomes must have the same number of genes for crossover; attempting to repair.")
+            self.repair_chromosome()
+            other.repair_chromosome()
 
         gene_count = len(self.genes)
         num_selected = max(1, int(crossover_rate * gene_count))
@@ -72,7 +84,11 @@ class Chromosome:
         for idx, gene in zip(selected_indices_in_other, selected_genes_in_order):
             new_genes[idx] = gene
 
-        return Chromosome(new_genes)
+        # Ensure the chromosome is valid (no duplicates)
+        new_genes = repair_chromosome(self.original_genes, new_genes, self.starting_gene)
+
+        # Explictly return a chromosome
+        return Chromosome(original_genes=new_genes, starting_gene=self.starting_gene, length=self.length)
 
     import random
 
@@ -81,15 +97,18 @@ class Chromosome:
         # Repair this chromosome first to ensure no duplicates
         n = len(self.genes)
 
+        # Fix if somehow got a bad length
         if n != 50:
-            capital_objects = repair_chromosome(set(self.genes), self.genes)
-        else:
-            capital_objects = self.genes[:]
+            self.repair_chromosome()
 
+        capital_objects = self.genes[:]
         capital_pairs = [(capital.Name, capital) for capital in capital_objects]
 
         assert len(capital_pairs) == 50, "Expected 50 capital pairs initially"
         assert len(set(name for name, _ in capital_pairs)) == 50, "Duplicate cities found initially"
+
+        # If successfully repaired, continue and reset n
+        n = len(capital_pairs)
 
         # Compute how many mutations to perform
         num_mutations = max(int(len(capital_pairs) * mutation_rate), 1)
@@ -149,22 +168,28 @@ class Chromosome:
         assert len(set(name for name, _ in capital_pairs)) == 50, "City names must be unique after mutation"
 
         # Update genes
-        self.genes = [capital for _, capital in capital_pairs]
+        new_genes = [capital for _, capital in capital_pairs]
+
+        # Explicit return of a chromosome
+        self.genes=new_genes
+        self.repair_chromosome()
 
     def swap_mutation(self, mutation_rate, use_weights=False):
         n = len(self.genes)
 
         # Repair this chromosome first to ensure no duplicates
         if n != 50:
-            capital_objects = repair_chromosome(set(self.genes), self.genes)
-        else:
-            capital_objects = self.genes[:]
+            self.repair_chromosome()
 
+        capital_objects = self.genes[:]
         capital_pairs = [(capital.Name, capital) for capital in capital_objects]
 
         # Test this is true or break
         assert len(capital_pairs) == 50, "Expected 50 capital pairs initially"
         assert len(set(name for name, _ in capital_pairs)) == 50, "Duplicate cities found initially"
+
+        # If successfully repaired, continue and reset n
+        n = len(capital_pairs)
 
         # Compute how many mutations to perform
         num_mutations = max(1, int(mutation_rate * n))
@@ -196,8 +221,22 @@ class Chromosome:
             i, j = random.sample(indices, k= 2)
             self.genes[i], self.genes[j] = self.genes[j], self.genes[i]
 
+        # Explicit return of a chromosome
+        self.repair_chromosome()
+
     def chunk_mutation(self, mutation_rate, max_chunk_size=3):
         n = len(self.genes)
+
+        # Repair this chromosome first to ensure no duplicates
+        if n != 50:
+            self.repair_chromosome()
+
+        # Test this is true or break
+        assert len(self.genes) == 50, "Expected 50 capital pairs initially"
+
+        # If successfully repaired, continue and reset n
+        n = len(self.genes)
+
         num_mutations = max(1, int(mutation_rate * n))
         for _ in range(num_mutations):
             chunk_size = random.randint(1, max_chunk_size)
@@ -210,8 +249,22 @@ class Chromosome:
             for i in range(chunk_size):
                 self.genes[start1 + i], self.genes[start2 + i] = self.genes[start2 + i], self.genes[start1 + i]
 
+        # Explicit return of a chromosome
+        self.repair_chromosome()
+
     def shuffle_mutation(self, mutation_rate):
         n = len(self.genes)
+
+        # Repair this chromosome first to ensure no duplicates
+        if n != 50:
+            self.repair_chromosome()
+
+        # Test this is true or break
+        assert len(self.genes) == 50, "Expected 50 capital pairs initially"
+
+        # If successfully repaired, continue and reset n
+        n = len(self.genes)
+
         num_indices = min(n, max(2, int(mutation_rate * n)))
         indices = random.sample(range(n), num_indices)
         values = [self.genes[i] for i in indices]
@@ -219,9 +272,17 @@ class Chromosome:
         for idx, val in zip(indices, values):
             self.genes[idx] = val
 
+        # Explicit return of a chromosome
+        self.repair_chromosome()
+
     def mutate(self, mutation_rate, max_chunk_size=3):
+        # Store original length
+        original_length = len(self.genes)
+
         # Randomly choose a mutation mode
         mode = random.choice(["swap", "chunk", "shuffle", "insert"])
+
+        print(f"Applying {mode} mutation with rate {mutation_rate}")
 
         if mode == "swap":
             self.swap_mutation(mutation_rate)
@@ -234,72 +295,73 @@ class Chromosome:
         else:
             raise ValueError(f"Unsupported mutation mode: {mode}")
 
+        # Validate length after mutation
+        if len(self.genes) != original_length:
+            print(f"Length mismatch after {mode} mutation: {len(self.genes)} vs {original_length}")
+            self.repair_chromosome()
+
+        # Final validation
+        assert len(self.genes) == 50, f"Invalid chromosome length after {mode} mutation: {len(self.genes)}"
+
+    # Ensure the length remains unchanged
     def repair_chromosome(self):
         """
-        Repair the chromosome by ensuring that all genes are unique.
-        If duplicates are found, they are replaced with random genes
-        from the original set of genes not present in the chromosome.
-
-        :return: None
+        Remove duplicate genes, ensure starting_gene is first if provided,
+        and restore any missing genes to reach original set.
         """
-        from collections import Counter
-
-        original_names = [gene.Name for gene in self.original_genes]
-        current_names = [gene.Name for gene in self.genes]
-
-        # Count duplicates
-        name_counts = Counter(current_names)
-        duplicates = [name for name, count in name_counts.items() if count > 1]
-        missing = list(set(original_names) - set(current_names))
-
-        # Remove duplicates (but keep one occurrence)
+        original_map = {gene.Name: gene for gene in self.original_genes}
         seen = set()
-        cleaned_genes = []
+        cleaned = []
+
+        # 1. If a starting gene is specified, add it once at the front
+        if self.starting_gene:
+            cleaned.append(self.starting_gene)
+            seen.add(self.starting_gene.Name)
+
+        # 2. Add other genes, skipping duplicates
         for gene in self.genes:
             if gene.Name not in seen:
-                cleaned_genes.append(gene)
+                cleaned.append(gene)
                 seen.add(gene.Name)
 
-        # Add missing genes
+        # 3. Append missing genes to restore full length
+        missing = [name for name in original_map if name not in seen]
         for name in missing:
-            cleaned_genes.append(Capital.get_capital_by_name(name))
+            cleaned.append(original_map[name])
 
-        assert len(cleaned_genes) == len(set(original_names)), f"Chromosome length mismatch: {len(cleaned_genes)} vs {len(original_names)}"
+        # Sanity checks
+        assert len(cleaned) == len(self.original_genes) == 50, f"Chromosome length mismatch: {len(cleaned)}"
+        assert len({g.Name for g in cleaned}) == 50, "Duplicates detected after repair"
+        if self.starting_gene:
+            assert cleaned[0] == self.starting_gene, "Starting gene not at front"
 
-        self.genes = cleaned_genes
+        print(f"Length after repair: {len(cleaned)}")
 
-def repair_chromosome(original_genes, genes):
-    """
-    Repair the chromosome by ensuring that all genes are unique.
-    If duplicates are found, they are replaced with missing genes
-    from the original set.
+        self.genes = cleaned
 
-    :param original_genes: Full set of valid Capital objects (expected 50)
-    :param genes: Possibly broken chromosome (Capital objects with duplicates or missing ones)
-    :return: Repaired list of 50 Capital objects with unique cities
-    """
-    from collections import Counter
-
-    original_names = [gene.Name for gene in original_genes]
-    current_names = [gene.Name for gene in genes]
-
-    # Count duplicates
-    name_counts = Counter(current_names)
-    duplicates = [name for name, count in name_counts.items() if count > 1]
-    missing = list(set(original_names) - set(current_names))
-
-    # Remove duplicates (but keep one occurrence)
+def repair_chromosome(original_genes, genes, starting_gene=None):
+    original_map = {g.Name: g for g in original_genes}
     seen = set()
-    cleaned_genes = []
+    cleaned = []
+
+    if starting_gene:
+        cleaned.append(starting_gene)
+        seen.add(starting_gene.Name)
+
     for gene in genes:
         if gene.Name not in seen:
-            cleaned_genes.append(gene)
+            cleaned.append(gene)
             seen.add(gene.Name)
 
-    # Add missing genes
-    for name in missing:
-        cleaned_genes.append(Capital.get_capital_by_name(name))
+    for name in original_map:
+        if name not in seen:
+            cleaned.append(original_map[name])
 
-    assert len(cleaned_genes) == len(set(original_names)), f"Chromosome length mismatch: {len(cleaned_genes)} vs {len(original_names)}"
+    assert len(cleaned) == len(original_genes) == 50
+    assert len({g.Name for g in cleaned}) == 50
+    if starting_gene:
+        assert cleaned[0] == starting_gene
 
-    return cleaned_genes
+    print(f"Length after repair: {len(cleaned)}")
+
+    return cleaned

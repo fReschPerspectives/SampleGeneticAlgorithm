@@ -6,14 +6,15 @@ import os
 
 if __name__ == "__main__":
     #os.add_dll_directory("C:\\gdal-3.11.3-proj-9.6.2-arm64\\bin") # annoying bit to get pyogrio to import without complaining
+    from SampleGeneticAlgorithm.Capitals.Capital import Capital
     from SampleGeneticAlgorithm.General_Utils.Plotting import plot_trail
 
     # Create a population of chromosomes
-    initial_population_size = 250  # Define the initial population size
+    initial_population_size = 4  # Define the initial population size
 
     # Initialize the population with a specified size and individual class
     # Each individual is a Chromosome object initialized with a set of genes
-    population = Population(initial_population_size, Chromosome, starting_gene=get_capital_by_city_name(name = "Denver"), mutation_rate=0.06, cross_over_rate=0.6)
+    population = Population(initial_population_size, Chromosome, genes=Capital.create_state_capitals(), starting_gene=get_capital_by_city_name(name = "Denver"), generation=0, iterations=500, mutation_rate=.06, cross_over_rate=0.6)
     print(f"Population initialized with {len(population.individuals)} individuals.")
     print(f"Population initialized with mutation rate: {population.mutation_rate}, crossover rate: {population.cross_over_rate}")
 
@@ -32,7 +33,7 @@ if __name__ == "__main__":
               )
 
     # Define the number of generations to iterate through:
-    num_generations = 500
+    num_generations = 10
     for i in range(num_generations):
         print(f"Generation {i + 1}: Best Fitness = {population.best_individual.fitness}")
 
@@ -48,7 +49,7 @@ if __name__ == "__main__":
         population.individuals.clear()
         population = new_generation
         population.generation +=1
-        population.iterations = 500
+        population.iterations = 10
 
         best_genes = population.best_individual.get_genes()
         latitudes = [gene.Latitude for gene in best_genes]
