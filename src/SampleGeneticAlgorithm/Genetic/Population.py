@@ -43,7 +43,7 @@ class Population:
         """
         self.population_size = population_size
         self.individual_class = individual_class
-        self.genes = genes
+        self.genes = genes if genes else None
         self.starting_gene = starting_gene
         if individuals:
             print("Initializing population with provided individuals.")
