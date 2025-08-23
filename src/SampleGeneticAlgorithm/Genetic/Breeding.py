@@ -42,7 +42,7 @@ class Breeding(Population):
         self.mutation_rate = ((self.iterations - self.generation)/self.iterations) * self.mutation_rate # Decay mutation rate for diversity
         self.cross_over_rate = ((self.iterations - self.generation)/self.iterations) * self.cross_over_rate # Decay mutation rate for diversity
 
-        print(f"Generation: {self.generation}, Mutation Rate: {self.mutation_rate}, Crossover Rate: {self.cross_over_rate}")
+        print(f"Generation: {self.generation + 1}, Mutation Rate: {self.mutation_rate}, Crossover Rate: {self.cross_over_rate}")
 
         elite = self.best_individual  # Get the best individual from the current population
 

@@ -23,6 +23,13 @@ if __name__ == "__main__":
 
     # Print the initial best fitness
     print(f"Initial Best Fitness: {population.best_individual.fitness}")
+    best_genes = population.best_individual.get_genes()
+    latitudes = [gene.Latitude for gene in best_genes]
+    longitudes = [gene.Longitude for gene in best_genes]
+    plot_trail(latitudes,
+               longitudes,
+               title=f"Generation 0 - Best Fitness - {population.best_individual.fitness}",
+              )
 
     # Define the number of generations to iterate through:
     num_generations = 500
