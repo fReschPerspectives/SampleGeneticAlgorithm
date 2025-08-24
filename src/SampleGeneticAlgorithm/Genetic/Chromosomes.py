@@ -1,9 +1,11 @@
 from SampleGeneticAlgorithm.Capitals.Capital import Capital
 from SampleGeneticAlgorithm.Capitals.Capital import get_capital_by_city_name
 from SampleGeneticAlgorithm.Genetic.Genes import Genes
+from shapely.geometry import LineString
 import random
 
 ##TODO: Update all the sanity checks to use length if present or len(self.original_genes) instead of hardcoding 50
+##TODO: Add a mutation option that targets vertices of line segment crossings
 class Chromosome:
     """
     A class representing a set of chromosomes, each containing a list of genes.
@@ -99,9 +101,84 @@ class Chromosome:
         # Explictly return a chromosome
         return Chromosome(original_genes=new_genes, starting_gene=self.starting_gene, length=self.length)
 
-    import random
+    def uncoil_mutation(self, mutation_rate: float):
+        """
+        This mutation targets line segment intersections in the path defined by the genes.
+        It identifies intersecting segments and attempts to "uncoil" them by changing
+        the order of genes between the intersecting segments in place.
+        :param mutation_rate: Fraction of genes to use for mutation.
+        :return: None, mutates in place.
+        """
+        segments = []
+        vertices = []
+        vertex_pairs = []
+        n = len(self.genes)
+        genes = self.genes[:]
+        coords = [(gene.Longitude, gene.Latitude) for gene in self.genes] # This is a one-to-one mapping of self.genes to its lat/long pairs
 
-    ##TODO: Make calls to this randomize the use_weights parameter
+        for i in range(n):
+            start = coords[i]
+            end = coords[(i + 1) % n]  # wrap-around for closed loop, or skip if not looping
+            segments.append(LineString([start, end])) # Create line segments
+            vertex_pairs.append((i, (i + 1) % n)) # Store the vertex indices
+            vertices.append((genes[i], genes[(i + 1) % n])) # Store the gene pairs for reference
+
+        # Compare all pairs except neighbors and check for intersections
+        intersections = []
+        for i, seg in enumerate(segments):
+            for j, other in enumerate(segments):
+                if abs(i - j) <= 1 or abs(i - j) == n - 1:
+                    continue  # skip adjacent segments and loop back
+                if seg.intersects(other):
+                    has_intersection = True
+                    intersections.append((i, j))
+                    print(f"Intersection found between segments {i} and {j}")
+
+        # Now that we have the intersections as a pair of indices, we can randomly pick x pairs base on mutation rate to mess with
+        num_mutations = max(1, int(n * mutation_rate))  # Mutate up to 10% of intersections
+
+        if intersections:
+            # Now select non-overlapping pairs with unique vertices
+            selected = []
+            used_vertices = set()
+
+            # Shuffle to add randomness
+            random.shuffle(intersections)
+            for i, j in intersections:
+                vi1, vi2 = vertex_pairs[i]
+                vj1, vj2 = vertex_pairs[j]
+                # Ensure none of these four vertices has been used yet
+                if {vi1, vi2, vj1, vj2}.isdisjoint(used_vertices):
+                    selected.append((i, j))
+                    # Mark them as used
+                    used_vertices.update((vi1, vi2, vj1, vj2))
+                # Stop if we reach desired number
+                if len(selected) >= max(1, int(len(segments) * mutation_rate)):
+                    break
+
+            for i, j in selected:
+                print(f"Uncoiling between segments {i} and {j}")
+                # i and j are the indices of the segments that intersect
+                # Thus, i and j correspond to genes[i] to genes[i+1] and genes[j] to genes[j+1] as stored in vertices
+                capital1 = vertices[i][0] # Start of segment i
+                capital2 = vertices[i][1]  # End of segment i
+                capital3 = vertices[j][0]  # Start of segment j
+                capital4 = vertices[j][1]  # End of segment j
+
+                # We want to reverse the order of genes between capital2 and capital3
+                # This means we need to find their indices in self.genes
+                idx2 = genes.index(capital2)
+                idx3 = genes.index(capital3)
+
+                print(f"Reversed genes between indices {i + 1} and {j}")
+                print(f"Swapped locations of {capital2} and {capital3}")
+                self.genes[idx2], self.genes[idx3] = self.genes[idx3], self.genes[idx2]
+                self.repair_chromosome()
+        else:
+            print(f"No line segments intersected; no uncoiling performed.")
+            pass
+
+
     def insert_mutation(self, mutation_rate: float, use_weights: bool = True):
         # Pair city names and their capital objects together
         # Repair this chromosome first to ensure no duplicates
@@ -192,7 +269,6 @@ class Chromosome:
         self.genes=new_genes
         self.repair_chromosome()
 
-    ##TODO: Make calls to this randomize the use_weights parameter
     def swap_mutation(self, mutation_rate, use_weights=False):
         n = len(self.genes)
 
@@ -307,7 +383,7 @@ class Chromosome:
         original_length = len(self.genes)
 
         # Randomly choose a mutation mode
-        mode = random.choice(["swap", "chunk", "shuffle", "insert"])
+        mode = random.choice(["swap", "chunk", "shuffle", "insert", "uncoil"])
 
         # Randomly choose whether to use weights for swap and insert mutations
         if mode in ["swap", "insert"]:
@@ -326,6 +402,8 @@ class Chromosome:
             self.shuffle_mutation(mutation_rate)
         elif mode == "insert":
             self.insert_mutation(mutation_rate, use_weights=use_weights)
+        elif mode == "uncoil":
+            self.uncoil_mutation(mutation_rate)
         else:
             raise ValueError(f"Unsupported mutation mode: {mode}")
 
