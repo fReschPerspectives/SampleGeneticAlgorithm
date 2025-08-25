@@ -167,12 +167,22 @@ class Chromosome:
 
                 # We want to reverse the order of genes between capital2 and capital3
                 # This means we need to find their indices in self.genes
+                idx1 = genes.index(capital1)
                 idx2 = genes.index(capital2)
                 idx3 = genes.index(capital3)
+                idx4 = genes.index(capital4)
 
-                print(f"Reversed genes between indices {i + 1} and {j}")
-                print(f"Swapped locations of {capital2} and {capital3}")
-                self.genes[idx2], self.genes[idx3] = self.genes[idx3], self.genes[idx2]
+                # Now either swap indices 2 and 3 or 1 and 4
+                if random.random() < 0.5:
+                    # Code runs 50% of the time
+                    print(f"Reversed genes between indices {i + 1} and {j}")
+                    print(f"Swapped locations of {capital2} and {capital3}")
+                    self.genes[idx1], self.genes[idx4] = self.genes[idx4], self.genes[idx1]
+                else:
+                    print(f"Reversed genes between indices {i + 1} and {j}")
+                    print(f"Swapped locations of {capital2} and {capital3}")
+                    self.genes[idx2], self.genes[idx3] = self.genes[idx3], self.genes[idx2]
+
                 self.repair_chromosome()
         else:
             print(f"No line segments intersected; no uncoiling performed.")
